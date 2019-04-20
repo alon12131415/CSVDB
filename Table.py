@@ -85,22 +85,65 @@ class Table:
 	def update_aggs(self, agg_vals, row, field_list):
 		for agg in agg_vals:
 			agg_type, field_name = agg
-			if agg_type == 'sum':
-				if self.name2type[field_name] == 'int':
-					agg_vals[agg] += int(row[field_list.index(field_name)])
+			field_value = row[field_list.index(field_name)]
+			field_type = self.name2type[field_name]
+			
+			if field_value == ' ' and field_type != 'varchar':	continue#null value
+			
+			if(field_type == 'int'):	field_value = int(field_value)
+			if(field_type == 'float'):	field_value = float(field_value)
+			if(field_type == 'timestamp'):	field_value = int(field_value)
+			
+			if agg_type == 'min':
+				if field_type == 'int' or field_type == 'float' or field_type == 'timestamp':
+					agg_vals[agg] = min(field_value, agg_vals[agg])
 				else:
-					raise NotImplementedError('sum is supported only for int type fields')
-			else:
-				raise NotImplementedError('unimplemented agg type')
+					raise NotImplementedError('min is not supported for {} type fields'.format(field_name))
+			elif agg_type == 'max':
+				if field_type == 'int' or field_type == 'float' or field_type == 'timestamp':
+					agg_vals[agg] = max(field_value, agg_vals[agg])
+				else:
+					raise NotImplementedError('max is not supported for {} type fields'.format(field_name))		
+			elif agg_type == 'sum':
+				if field_type == 'int' or field_type == 'float':
+					agg_vals[agg] += field_value
+				else:
+					raise NotImplementedError('sum is not supported for {} type fields'.format(field_name))
+			elif agg_type == 'count':
+				if field_type == 'int' or field_type == 'float' or field_type == 'timestamp' or field_type == 'varchar':
+					agg_vals[agg] += 1
+				else:
+					raise NotImplementedError('count is not supported for {} type fields'.format(field_name))
+			else:#no need to handle avg because we will calculate sum and count instead(and divide). 
+				raise NotImplementedError('unimplemented agg type: {}'.format(agg_type))
 
 	def write_group_line(self, out_file, fields, agg_vals, row, row_fields):
 		line = []
 		for field in fields:
 			if isinstance(field, tuple):#agg
-				line.append(agg_vals[field])
+				if(field[0] != 'avg'):	line.append(agg_vals[field])
+				if(field[0] == 'avg'):	line.append(agg_vals[('sum', field[1])] / agg_vals[('count', field[1])])
 			else:
 				line.append(row[row_fields.index(field)])
 		out_file.add_line(line)
+	
+	def set_up_agg_vals(fields):
+		agg_vals = {}
+		for field in fields:
+			if not isinstance(field, tuple):	continue
+			if field[0] == 'min':
+				agg_vals[field] = 2**63 - 1
+			elif field[0] == 'max':
+				agg_vals[field] = -2**63
+			elif field[0] == 'sum':
+				agg_vals[field] = 0
+			elif field[0] == 'count':
+				agg_vals[field] = 0
+			elif field[0] == 'avg':
+				agg_vals[('sum', field[1])] = 0#calculate avg based on count and sum
+				agg_vals[('count', field[1])] = 0
+			else:
+				raise NotImplementedError('unimplemented agg type: {}'.format(field[0]))
 	
 	def select(self, out, _fields, where, group, having, order):
 		"""
