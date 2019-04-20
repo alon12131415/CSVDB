@@ -47,7 +47,6 @@ def perform_tests():
 		with open(os.path.join(SOURCE_DIR, "unittests", test, "test.sql")) as infile:
 			for input_text in infile:
 				execute_command(input_text.strip())
-			input()
 			if filecmp.cmp("output.csv",os.path.join(SOURCE_DIR,"unittests", test, "good_output.csv")):
 				print("test passed!")
 			else:

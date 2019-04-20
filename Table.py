@@ -149,15 +149,21 @@ class Table:
 			fp_list = []
 			file_num = self.line_batches
 			order_mapped = list(map(lambda x: (fields.index(x[0]), x[1]), order))
+			ind = 0
+			fieldTypes = list(map(lambda x: self.name2type[x], fields))
+			compareFunc = get_compare(order_mapped, fieldTypes)
 			while True:														#sort files seperately
 				try:
-					a = self.sort_internally(order_mapped, ind, fields, nicknames, needed_fields, where)
+					a = self.sort_internally(order_mapped, ind, fields, nicknames, needed_fields, where, compareFunc)
 				except FileNotFoundError:
 					break
 				fp_list.append(a)
-			final_file = self.merge_files(fp_list, order_mapped, 0)			#merge sorted files
+				ind += 1
+			final_file = self.merge_files(fp_list, order_mapped, 0, compareFunc)			#merge sorted files
+			if isinstance(final_file, list):
+				final_file = final_file[0]
 			if out is not None:																#no_print
-				os.rename(os.path.join(self.name, final_file), os.path.join(out))
+				os.rename(os.path.join(self.name, final_file), out)
 			else:
 				csvfile = open(os.path.join(self.name, final_file), "r")
 				csvreader = csv.reader(csvfile)
@@ -206,7 +212,7 @@ class Table:
 		if out is not None: csvwriter.done()
 		if VERBOSE(): print("took {} seconds".format(time.time() - start_time))
 
-	def sort_internally(self, order, index, fields, nicknames, needed_fields, where):
+	def sort_internally(self, order, index, fields, nicknames, needed_fields, where, compareFunc):
 		"""
 		sorts the files of index $index according to the fields. 
 		writes the output to a csv and returns the filename.
@@ -216,11 +222,8 @@ class Table:
 		out = "tmp{}".format(index)
 		csvwriter = writer(os.path.join(self.name, out))
 
-		field_types = []
-		for field in fields:
-			field_types.append(self.name2type[nicknames[field]])
-		line_cmp = get_compare(order, field_types)
-		csvwriter.lines = [field_types]
+		
+		# line_cmp = get_compare(order, field_types)
 		csvwriter.flush()
 		rows = []
 		for _ in range(FILE_SIZES()):
@@ -231,11 +234,11 @@ class Table:
 				continue
 			rows.append([x[2] for x in row])
 		# csvwriter.lines = sorted(rows, key=operator.itemgetter(*sort_indexes))
-		csvwriter.lines = sorted(rows, key=functools.cmp_to_key(line_cmp))
+		csvwriter.lines = sorted(rows, key=functools.cmp_to_key(compareFunc))
 		csvwriter.done()
 		return out
 
-	def merge_files(self, file_lst, ind, it):
+	def merge_files(self, file_lst, ind, it, compareFunc):
 		"""
 		merges files recursivly where ind is a list of indexes which are needed to be sorted by
 		(to sort multiple fields)
@@ -244,8 +247,8 @@ class Table:
 		if len(file_lst) == 1:
 			return file_lst
 		elif len(file_lst) == 2:
-			return merge(file_lst[0], file_lst[1],self.name, it + 1, ind)
+			return merge(file_lst[0], file_lst[1],self.name, it + 1, ind, compareFunc)
 		else:
-			file1 = merge_files(file_lst[:len(file_lst)//2], ind, it)
-			file2 = merge_files(file_lst[len(file_lst)//2:], ind, it)
-			return merge(file1, file2,self.name, it + 1, ind)
+			file1 = self.merge_files(file_lst[:len(file_lst)//2], ind, it, compareFunc)
+			file2 = self.merge_files(file_lst[len(file_lst)//2:], ind, it, compareFunc)
+			return merge(file1, file2,self.name, it + 1, ind, compareFunc)

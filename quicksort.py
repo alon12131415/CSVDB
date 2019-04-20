@@ -29,7 +29,7 @@ def get_compare(ind, types):
 
 	return real_cmp
 
-def merge(name1, name2, table_name, iteration, ind):
+def merge(name1, name2, table_name, iteration, ind, compareFunc):
 	l = FILE_SIZES()
 	out = "tmp_{}_{}".format(iteration, name1[3:])
 	csvwriter = writer(os.path.join(table_name, out))
@@ -38,16 +38,12 @@ def merge(name1, name2, table_name, iteration, ind):
 	csv1 = csv.reader(f1)
 	csv2 = csv.reader(f2)
 
-	types1 = next(csv1)
-	types2 = next(csv2)
-
 	line1 = next(csv1)
 	line2 = next(csv2)
-	line_cmp = get_compare(ind, types1)
 	a = 0; b = 0
 	while True:
 		# if list(line1[i[0]] for i in ind)[0] < list(line2[i[0]] for i in ind)[0]:
-		if line_cmp(line1, line2) == -1:
+		if compareFunc(line1, line2) == -1:
 			csvwriter.add_line(line1)
 			a += 1
 			try:
