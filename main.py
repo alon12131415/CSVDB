@@ -93,7 +93,7 @@ def main():
 		perform_tests()
 		return
 	if args.run:
-		with open(os.path.join(args.rootdir, args.run)) as infile:
+		with open(os.path.join(SOURCE_DIR, args.run)) as infile:
 			for input_text in infile:
 				execute_command(input_text.strip())
 		return

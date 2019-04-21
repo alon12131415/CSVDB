@@ -7,20 +7,20 @@ import Table
 import os
 
 def load(file_name, table_name, ignored):
-	table = Table.Table(table_name, "wb")
+	table = Table.Table(table_name, "ab")
 	with open(file_name, "r") as csvfile:
 		file_reader = csv.reader(csvfile)
-		
 		i = 0
-		current_batch = 0
+		current_batch = table.last_i
 		max_size = FILE_SIZES()
-		current_fp_index = 0
+		current_fp_index = table.file_num
+		print(current_batch, current_fp_index)
+		for field_name in table.field_names: table.columns[field_name].setFP(current_fp_index)
 		for row in file_reader:	
 			if current_batch > max_size - 1:
 				current_batch = 0
 				current_fp_index += 1
 				for field_name in table.field_names: table.columns[field_name].setFP(current_fp_index)
-				
 			if i < ignored:
 				i += 1
 				continue
@@ -43,3 +43,11 @@ def load(file_name, table_name, ignored):
 				elif col.type == "timestamp":
 					col.fp.write((b"\x00" + struct.pack(">Q", 0)) if val in ["", "NULL"] else (b"\x01" + struct.pack(">Q", int(val))))
 			current_batch += 1
+		scheme_path = os.path.join(table_name, "table.json")
+		schema_file = open(scheme_path, "r+")
+		full_file = json.load(schema_file)
+		schema_file.seek(0)
+		full_file["file_num"] = current_fp_index
+		full_file["last_i"] = current_batch
+		json.dump(full_file, schema_file, indent=True)
+		schema_file.close()

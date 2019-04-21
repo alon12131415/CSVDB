@@ -26,6 +26,8 @@ class Table:
 		schema_file.close()
 
 		self.line_batches = full_file["file_sizes"]
+		self.file_num = full_file["file_num"]
+		self.last_i = full_file["last_i"]
 		set_const("FILE_SIZES", self.line_batches)
 		schema = full_file['schema']
 		#define local objects that help us get through the rough command ;-)
@@ -192,16 +194,11 @@ class Table:
 			fp_list = []
 			file_num = self.line_batches
 			order_mapped = list(map(lambda x: (fields.index(x[0]), x[1]), order))
-			ind = 0
 			fieldTypes = list(map(lambda x: self.name2type[x], fields))
 			compareFunc = get_compare(order_mapped, fieldTypes)
-			while True:														#sort files seperately
-				try:
-					a = self.sort_internally(order_mapped, ind, fields, nicknames, needed_fields, where, compareFunc)
-				except FileNotFoundError:
-					break
+			for ind in range(self.file_num + 1):														#sort files seperately
+				a = self.sort_internally(order_mapped, ind, fields, nicknames, needed_fields, where, compareFunc)
 				fp_list.append(a)
-				ind += 1
 			final_file = self.merge_files(fp_list, order_mapped, 0, compareFunc)			#merge sorted files
 			if isinstance(final_file, list):
 				final_file = final_file[0]
