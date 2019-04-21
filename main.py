@@ -1,5 +1,6 @@
 from Parser import Parser
 from consts import *
+from sqltokenizer import *
 import argparse
 import signal
 import sys
@@ -29,16 +30,35 @@ def execute_command(input_text):
 		traceback.print_tb(err.__traceback__)
 		print("{}: {}".format(type(err).__name__, err))
 
+def confirm_command(text):
+	"""
+	private feature, not intended for commercial use!
+	"""
+	tokenizer = SqlTokenizer(text)
+	token, value = tokenizer.next_token()
+	while token != SqlTokenKind.EOF:
+		if token == SqlTokenKind.OPERATOR and value == ";":
+			return True
+		token, value = tokenizer.next_token()
+	return False
+
+def input_from_keyboard():
+	input_text = ''
+	new_row = ''
+	while new_row != ';':
+		new_row = input("csvdb>")
+		input_text += new_row + " "
+		if confirm_command(input_text):
+			break
+	return input_text
+
+
 def main_loop():
 	print("""Welcome to the best csvdb program
 Please enter a command according to the negotiated syntax
 please finish a command with a ; IN A NEW LINE.""")
 	while True:
-		input_text = ''
-		new_row = ''
-		while new_row != ';':
-			new_row = input("csvdb>")
-			input_text += new_row + " " 
+		input_text = input_from_keyboard()
 		execute_command(input_text)
 
 def perform_tests():
