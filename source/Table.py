@@ -227,18 +227,12 @@ class Table:
 			if current_batch > max_size - 1:
 				current_batch = 0
 				current_fp_index += 1
-				try:
-					for field_name in self.field_names: self.columns[field_name].setFP(current_fp_index)
-				except FileNotFoundError:
+				if (current_fp_index >= self.file_num):
 					break
+				for field_name in self.field_names: self.columns[field_name].setFP(current_fp_index)
 			current_batch += 1
 			field_res = {field:self.columns[field].getRow(where) for field in needed_fields}
-			line = []
-			for field in fields:
-				if not isinstance(field, tuple):
-					line.append(field_res[nicknames[field]])
-				else:
-					raise NotImplementedError
+			line = [field_res[nicknames[field]] for field in fields]
 			if line[0][0]:#is col 0 finished
 				break
 			if not all([x[1] for x in line]):#didn't pass the where

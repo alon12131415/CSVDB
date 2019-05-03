@@ -52,7 +52,18 @@ def input_from_keyboard():
 			break
 	return input_text
 
+def compare_files(out, good):
+    errs = 0
+    with open(out) as o:
+        with open(good) as g:
+            for i, (lo, lg) in enumerate(zip(o, g)):
 
+                if lo != lg:
+                    print(f"DIFF[{'%4d'% i}]: {lo}\t{lg}")
+                    errs += 1
+    if errs:
+    	return False
+    return True
 def main_loop():
 	print("""Welcome to the best csvdb program
 Please enter a command according to the negotiated syntax
@@ -67,7 +78,7 @@ def perform_tests():
 		with open(os.path.join(SOURCE_DIR, "unittests", test, "test.sql")) as infile:
 			for input_text in infile:
 				execute_command(input_text.strip())
-			if filecmp.cmp("output.csv",os.path.join(SOURCE_DIR,"unittests", test, "good_output.csv")):
+			if compare_files("output.csv",os.path.join(SOURCE_DIR,"unittests", test, "good_output.csv")):
 				print("test passed!")
 			else:
 				input("test did not pass! (press ENTER to continue)")

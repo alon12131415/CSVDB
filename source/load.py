@@ -14,7 +14,6 @@ def load(file_name, table_name, ignored):
 		current_batch = table.last_i
 		max_size = FILE_SIZES()
 		current_fp_index = table.file_num
-		print(current_batch, current_fp_index)
 		for field_name in table.field_names: table.columns[field_name].setFP(current_fp_index)
 		for row in file_reader:	
 			if current_batch > max_size - 1:

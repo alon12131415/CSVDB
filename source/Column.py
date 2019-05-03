@@ -19,7 +19,6 @@ class Column:
 	def getRow(self, where):#return: finished, valid(where), val
 		
 		def satisfiesWhere(x):#better solution would be eval but fine - shut up 
-							  #TODO:        NULL stuff(smaller the everything, is, is not)
 			if where['field'] != self.field_name:
 				return True
 			op = where["op"]
