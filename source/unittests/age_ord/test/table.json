@@ -1,0 +1,15 @@
+{
+ "schema": [
+  {
+   "field": "name",
+   "type": "varchar"
+  },
+  {
+   "field": "age",
+   "type": "int"
+  }
+ ],
+ "file_sizes": 2,
+ "file_num": 1,
+ "last_i": 1
+}

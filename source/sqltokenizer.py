@@ -3,6 +3,7 @@ import ast
 from enum import Enum
 import re
 
+
 class SqlTokenKind(Enum):
     ERROR = -1
     EOF = 0
@@ -21,7 +22,6 @@ class SqlTokenizer(object):
     # LIT_STR = 3
     # LIT_NUM = 4
     # OPERATOR = 5
-
 
     _reserved_words = [
         'select',
@@ -77,7 +77,8 @@ class SqlTokenizer(object):
         self._text = text
         self._n = len(text)
         self._i_next = 0   # index into text[]
-        # cur_line_start_index, cur_line_number are used to give syntax error messages location
+        # cur_line_start_index, cur_line_number are used to give syntax error
+        # messages location
         self._cur_line_start_index = 0  # index into text[] of the line start
         self._cur_line_number = 0
 
@@ -113,17 +114,20 @@ class SqlTokenizer(object):
         return self._cur_line_number + 1, self._i_next - self._cur_line_start_index + 1
 
     def _next_lit_numeric(self):
-        m = re.match(r"^([\-\+]?\d+(\.\d*)?(e[\-\+]?\d+)?)", self._text[self._i_next:])
+        m = re.match(r"^([\-\+]?\d+(\.\d*)?(e[\-\+]?\d+)?)",
+                     self._text[self._i_next:])
         if m:
-            num, point, exp = m.group(1,2,3)
+            num, point, exp = m.group(1, 2, 3)
 
             if point or exp:
                 val = float(num)
             else:
                 val = int(num)
         else:
-            # not starting with a digit - digits after decimal point are mandatory
-            m = re.match(r"^([\-\+]?\.\d+(e[\-\+]?\d+)?)", self._text[self._i_next:])
+            # not starting with a digit - digits after decimal point are
+            # mandatory
+            m = re.match(r"^([\-\+]?\.\d+(e[\-\+]?\d+)?)",
+                         self._text[self._i_next:])
             if m:
                 num = m.group(1)
                 val = float(num)
@@ -209,7 +213,7 @@ class SqlTokenizer(object):
 
 
 def _test():
-    text = r"""select year, max(name) , avg(duration) 
+    text = r"""select year, max(name) , avg(duration)
     into outfile "c:\\temp\\mobvie_duration.csv"
     from movies
     where year >= 2000
@@ -227,6 +231,7 @@ def _test():
 
         if tok == SqlTokenKind.EOF:
             break
+
 
 if __name__ == "__main__":
     _test()
