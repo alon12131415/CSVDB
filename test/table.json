@@ -1,11 +1,11 @@
 {
  "schema": [
   {
-   "field": "name",
+   "field": "category",
    "type": "varchar"
   },
   {
-   "field": "age",
+   "field": "val",
    "type": "int"
   }
  ],

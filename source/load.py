@@ -70,7 +70,7 @@ def load(file_name, table_name, ignored):
         schema_file = open(scheme_path, "r+")
         full_file = json.load(schema_file)
         schema_file.seek(0)
-        full_file["file_num"] = current_fp_index
+        full_file["file_num"] = current_fp_index + 1
         full_file["last_i"] = current_batch
         json.dump(full_file, schema_file, indent=True)
         schema_file.close()

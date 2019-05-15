@@ -4,7 +4,6 @@ import glob
 import json
 import os
 import time
-
 import Column
 from consts import *
 from quicksort import merge, get_compare
@@ -45,6 +44,18 @@ class Table:
             self.field_names.append(field_name)
             self.name2type[field_name] = field_type
 
+    def type_from_name(self, field_name):
+        if not isinstance(field_name, tuple):
+            return self.name2type[field_name]
+        agg_type = field_name[0]
+        field_type = self.name2type[field_name[1]]
+        if agg_type in ['min', 'max', 'sum']:
+            return field_type
+        elif agg_type == 'count':
+            return 'int'
+        elif agg_type == 'avg':
+            return 'float'
+
     def get_final_field(self, source):
         """
         returns a list of the columns/aggs needed(if column so name if agg so a tuple),
@@ -65,7 +76,7 @@ class Table:
                 else:
                     nicknames[x[1]] = x[0]
                     out.append(x[1])
-                    needed_fields.add(x[0])
+                    needed_fields.add(x[0] if not isinstance(x[0], tuple) else x[0][1])
             elif x in self.field_names:
                 needed_fields.add(x)
                 nicknames[x] = x
@@ -88,7 +99,7 @@ class Table:
         for agg in agg_vals:
             agg_type, field_name = agg
             field_value = row[field_list.index(field_name)]
-            field_type = self.name2type[field_name]
+            field_type = self.type_from_name(field_name)
 
             if field_value == ' ' and field_type != 'varchar':
                 continue  # null value
@@ -130,20 +141,7 @@ class Table:
                 raise NotImplementedError(
                     'unimplemented agg type: {}'.format(agg_type))
 
-    def write_group_line(self, out_file, fields, agg_vals, row, row_fields):
-        line = []
-        for field in fields:
-            if isinstance(field, tuple):  # agg
-                if(field[0] != 'avg'):
-                    line.append(agg_vals[field])
-                if(field[0] == 'avg'):
-                    line.append(agg_vals[('sum', field[1])] /
-                                agg_vals[('count', field[1])])
-            else:
-                line.append(row[row_fields.index(field)])
-        out_file.add_line(line)
-
-    def set_up_agg_vals(fields):
+    def set_up_agg_vals(self, fields):
         agg_vals = {}
         for field in fields:
             if not isinstance(field, tuple):
@@ -165,6 +163,18 @@ class Table:
                     'unimplemented agg type: {}'.format(
                         field[0]))
 
+    def write_group_line(self, out_file, fields, agg_vals, row, row_fields):
+        line = []
+        for field in fields:
+            if isinstance(field, tuple):  # agg
+                if(field[0] != 'avg'):
+                    line.append(agg_vals[field])
+                if(field[0] == 'avg'):
+                    line.append(agg_vals[('sum', field[1])] / agg_vals[('count', field[1])])
+            else:
+                line.append(row[row_fields.index(field)])
+        out_file.add_line(line)
+
     def select(self, out, _fields, where, group, having, order):
         """
         out - name of outfile name or None in case of no outfile
@@ -179,17 +189,21 @@ class Table:
         """
         # print(order)
         start_time = time.time()
+        print("_fields: ", _fields)
         fields, nicknames, needed_fields = self.get_final_field(_fields)
         #print("fields:", fields)
         #print("nicknames:", nicknames)
         #print("needed_fields:", needed_fields)
-
-        if any((isinstance(field, tuple) for field in fields)):  # any aggs
+        print("fields: ", fields)
+        if any((isinstance(nicknames[field], tuple) for field in fields)):  # any aggs
             needed_fields_list = list(needed_fields)
-            out_file_writer = writer(out)
-            agg_vals = {
-                field: 0 for field in fields if isinstance(
-                    field, tuple)}
+            need_order = bool(order) #if there is order we need to order the result
+            if need_order:
+                out_file_writer = writer("ordertmp", True)
+            else:
+                out_file_writer = writer(out)
+            file_list = ["ordertmp0"]
+            agg_vals = self.set_up_agg_vals(map(lambda x: nicknames[x], fields))
             self.select('tmp.csv', needed_fields_list, where, [],
                         {}, [(field, 'asc') for field in group])
             with open(os.path.join('tmp.csv'), "r") as csvfile:
@@ -202,21 +216,52 @@ class Table:
                     if prev_group is None:
                         prev_group = curr_group
                     if curr_group != prev_group:
-                        self.write_group_line(
-                            out_file_writer, fields, agg_vals, prev_row, needed_fields_list)
+                        fname = self.write_group_line(
+                            out_file_writer, map(lambda x: nicknames[x], fields), agg_vals, prev_row, needed_fields_list)
+                        if fname: file_list.append(fname)
                         agg_vals = {
                             field: 0 for field in fields if isinstance(
                                 field, tuple)}  # reset agg vals
                     self.update_aggs(agg_vals, row, needed_fields_list)
                     prev_group = curr_group
                     prev_row = row
-                self.write_group_line(
+                fname = self.write_group_line(
                     out_file_writer,
-                    fields,
+                    map(lambda x: nicknames[x], fields),
                     agg_vals,
                     prev_row,
                     needed_fields_list)
-                out_file_writer.done()
+                if fname: file_list.append(fname)
+            if need_order:
+                sorted_files = []
+                for i, fname in enumerate(file_list):
+                    fp = open(fname, "r")
+                    csvreader = csv.reader(fp)
+                    def read_func(x,y,z):
+                        try:
+                            return next(csvreader), False
+                        except StopIteration:
+                            return None, True
+                    print(order)
+                    print(fields)
+                    order_mapped = list(map(lambda x: (fields.index(x[0]), x[1]), order))
+                    fieldTypes = list(map(lambda x: self.type_from_name(nicknames[x]), fields))
+                    compareFunc = get_compare(order_mapped, fieldTypes)
+                    a = self.sort_internally(
+                        order_mapped,
+                        i,
+                        fields,
+                        nicknames,
+                        needed_fields,
+                        where,
+                        compareFunc,
+                        read_func)
+                    sorted_files.append(a)
+                final_file = self.merge_files(
+                    sorted_files, order_mapped, 0, compareFunc)  # merge sorted files
+                os.rename(os.path.join(self.name, final_file), out)
+                self.clean_up()
+            out_file_writer.done()
             os.remove(os.path.join('tmp.csv'))
             return
 
@@ -226,9 +271,10 @@ class Table:
             file_num = self.line_batches
             order_mapped = list(
                 map(lambda x: (fields.index(x[0]), x[1]), order))
-            fieldTypes = list(map(lambda x: self.name2type[x], fields))
+            fieldTypes = list(map(lambda x: self.type_from_name(nicknames[x]), fields))
             compareFunc = get_compare(order_mapped, fieldTypes)
-            for ind in range(self.file_num + 1):  # sort files seperately
+
+            for ind in range(self.file_num):  # sort files seperately
                 a = self.sort_internally(
                     order_mapped,
                     ind,
@@ -299,28 +345,36 @@ class Table:
             nicknames,
             needed_fields,
             where,
-            compareFunc):
+            compareFunc,
+            getRow = lambda where, fields, self: [self.columns[field].getRow(where) for field in fields],
+            needInternal = True):
         """
         sorts the files of index $index according to the fields.
         writes the output to a csv and returns the filename.
         """
-        for field_name in self.field_names:
-            self.columns[field_name].setFP(index)
+        if needInternal:
+            for field_name in self.field_names:
+                self.columns[field_name].setFP(index)
 
         out = "tmp{}".format(index)
         csvwriter = writer(os.path.join(self.name, out))
 
-        # line_cmp = get_compare(order, field_types)
         csvwriter.flush()
+        # getRow = lambda fields, where: [self.columns[field].getRow(where) for field in fields]
         rows = []
         for _ in range(FILE_SIZES()):
-            row = [self.columns[field].getRow(where) for field in fields]
-            if row[0][0]:
-                break
-            if not all([x[1] for x in row]):  # didn't pass the where
-                continue
-            rows.append([x[2] for x in row])
-        # csvwriter.lines = sorted(rows, key=operator.itemgetter(*sort_indexes))
+            row = getRow(where, fields, self)
+            if needInternal:
+                print(row)
+                if row[0][0]:
+                    break
+                if not all([x[1] for x in row]):  # didn't pass the where
+                    continue
+                rows.append([x[2] for x in row])
+            else:
+                if row[1]: break
+                rows.append(row)
+
         csvwriter.lines = sorted(rows, key=functools.cmp_to_key(compareFunc))
         csvwriter.done()
         return out

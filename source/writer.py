@@ -5,7 +5,11 @@ import csv
 
 class writer(object):
 
-    def __init__(self, out):
+    def __init__(self, out, batching = False):
+        self.base_file_name = out
+        if batching:
+            self.current_index = 0
+            out += str(self.current_index)
         self.csvfile = open(os.path.join(out), 'w+', newline='')
         self.csvwriter = csv.writer(self.csvfile)
         self.lines = []
@@ -18,6 +22,15 @@ class writer(object):
         self.lines.append(line)
         if len(self.lines) >= LINE_BATCHES():
             self.flush()
+            if batching:
+                self.current_index += 1
+                self.csvfile.close()
+                out = self.base_file_name + str(self.current_index)
+                self.csvfile = open(os.path.join(out), 'w+', newline='')
+                self.csvwriter = csv.writer(self.csvfile)
+                return out
+
+
 
     def done(self):
         self.flush()

@@ -16,7 +16,7 @@ def create_as_select(table_name, select_fields):
         select_fields[1])
     for field in fields:
         final_fields.append(
-            (field, original_table.name2type[nicknames[field]]))
+            (field, original_table.type_from_name(nicknames[field])))
     # final_fields = [(x, original_table.name2type[x]) for x in original_table.get_final_field(select_fields[1])[0]]
     # print(final_fields)
 

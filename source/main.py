@@ -18,8 +18,9 @@ tests = [
     "age_ord",
     "age_ord_asc",
     "order_where",
+    "big_order",
     "group1",
-    "big_order"]
+    "group_order"]
 
 
 def signal_handler(sig, frame):
@@ -37,9 +38,9 @@ def execute_command(input_text):
         print("Executing Command:", input_text)
     p = Parser(input_text)
     try:
-        exc_info = sys.exc_info()
+        # exc_info = sys.exc_info()
         a = p.execute()
-        a[0](*a[1])
+        a[0](*a[1]) #( ͡° ͜ʖ ͡°)
         if VERBOSE():
             print("Execution Success!")
     except Exception as err:
