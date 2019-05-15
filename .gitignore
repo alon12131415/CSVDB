@@ -2,3 +2,4 @@ __pycache__/
 input.txt
 .gitignore
 .idea
+source/unittests/clicks

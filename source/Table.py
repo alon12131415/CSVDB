@@ -162,6 +162,7 @@ class Table:
                 raise NotImplementedError(
                     'unimplemented agg type: {}'.format(
                         field[0]))
+        return agg_vals
 
     def write_group_line(self, out_file, fields, agg_vals, row, row_fields):
         line = []
@@ -173,7 +174,7 @@ class Table:
                     line.append(agg_vals[('sum', field[1])] / agg_vals[('count', field[1])])
             else:
                 line.append(row[row_fields.index(field)])
-        out_file.add_line(line)
+        return out_file.add_line(line)
 
     def select(self, out, _fields, where, group, having, order):
         """
@@ -189,24 +190,22 @@ class Table:
         """
         # print(order)
         start_time = time.time()
-        print("_fields: ", _fields)
         fields, nicknames, needed_fields = self.get_final_field(_fields)
         #print("fields:", fields)
         #print("nicknames:", nicknames)
         #print("needed_fields:", needed_fields)
-        print("fields: ", fields)
         if any((isinstance(nicknames[field], tuple) for field in fields)):  # any aggs
             needed_fields_list = list(needed_fields)
             need_order = bool(order) #if there is order we need to order the result
             if need_order:
-                out_file_writer = writer("ordertmp", True)
+                out_file_writer = writer(os.path.join(self.name, "ordertmp"), True)
             else:
                 out_file_writer = writer(out)
-            file_list = ["ordertmp0"]
+            file_list = [os.path.join(self.name, "ordertmp0")]
             agg_vals = self.set_up_agg_vals(map(lambda x: nicknames[x], fields))
-            self.select('tmp.csv', needed_fields_list, where, [],
+            self.select(os.path.join(self.name, 'atmp.csv'), needed_fields_list, where, [],
                         {}, [(field, 'asc') for field in group])
-            with open(os.path.join('tmp.csv'), "r") as csvfile:
+            with open(os.path.join(self.name, 'atmp.csv'), "r") as csvfile:
                 csv_reader = csv.reader(csvfile)
                 prev_group = None
                 prev_row = []
@@ -219,9 +218,7 @@ class Table:
                         fname = self.write_group_line(
                             out_file_writer, map(lambda x: nicknames[x], fields), agg_vals, prev_row, needed_fields_list)
                         if fname: file_list.append(fname)
-                        agg_vals = {
-                            field: 0 for field in fields if isinstance(
-                                field, tuple)}  # reset agg vals
+                        agg_vals = self.set_up_agg_vals(map(lambda x: nicknames[x], fields))
                     self.update_aggs(agg_vals, row, needed_fields_list)
                     prev_group = curr_group
                     prev_row = row
@@ -242,8 +239,6 @@ class Table:
                             return next(csvreader), False
                         except StopIteration:
                             return None, True
-                    print(order)
-                    print(fields)
                     order_mapped = list(map(lambda x: (fields.index(x[0]), x[1]), order))
                     fieldTypes = list(map(lambda x: self.type_from_name(nicknames[x]), fields))
                     compareFunc = get_compare(order_mapped, fieldTypes)
@@ -255,14 +250,17 @@ class Table:
                         needed_fields,
                         where,
                         compareFunc,
-                        read_func)
+                        read_func,
+                        False)
                     sorted_files.append(a)
                 final_file = self.merge_files(
                     sorted_files, order_mapped, 0, compareFunc)  # merge sorted files
+                if isinstance(final_file, list):
+                    final_file = final_file[0]
                 os.rename(os.path.join(self.name, final_file), out)
                 self.clean_up()
             out_file_writer.done()
-            os.remove(os.path.join('tmp.csv'))
+            os.remove(os.path.join(self.name, 'atmp.csv'))
             return
 
         if order:
@@ -365,7 +363,6 @@ class Table:
         for _ in range(FILE_SIZES()):
             row = getRow(where, fields, self)
             if needInternal:
-                print(row)
                 if row[0][0]:
                     break
                 if not all([x[1] for x in row]):  # didn't pass the where

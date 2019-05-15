@@ -37,7 +37,6 @@ def get_compare(ind, types):
 
 
 def merge(name1, name2, table_name, iteration, ind, compareFunc):
-    l = FILE_SIZES()
     out = "tmp_{}_{}".format(iteration, name1[3:])
     csvwriter = writer(os.path.join(table_name, out))
     f1 = open(os.path.join(table_name, name1))

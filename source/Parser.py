@@ -97,7 +97,6 @@ class Parser():
         self.next_tokens()
         fields = self.create_get_fields()
         self.expect(SqlTokenKind.OPERATOR, ";", ass=True)
-        #print(table_name, fields, check_ex)
         return 0, table_name, fields, check_ex
 
     def select_get_fields(self):
@@ -234,18 +233,15 @@ class Parser():
 
     def parse_load(self):
         # self.next_tokens()
-        #print(self._val, self._tok)
         self.expect(SqlTokenKind.KEYWORD, "data", ass=True)
         self.expect(SqlTokenKind.KEYWORD, "infile", ass=True)
         self.next_tokens()
         file_name = self._val
-        #print("file_name = ", file_name)
         self.expect(SqlTokenKind.KEYWORD, "into", ass=True)
         self.expect(SqlTokenKind.KEYWORD, "table", ass=True)
         self.next_tokens()
         table_name = self._val
         # print(table_name)
-        #print(self._val, self._tok)
         ignored = 0
         if not self.expect(SqlTokenKind.OPERATOR, ";"):
             self.expect(SqlTokenKind.KEYWORD, "ignore", skip=True, ass=True)

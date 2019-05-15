@@ -1,7 +1,8 @@
 import functools
+
+
 @functools.total_ordering
 class NULL:
-
     def __init__(self):
         pass
 
