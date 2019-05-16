@@ -1,5 +1,4 @@
 #! python3
-from consts import *
 from sqltokenizer import *
 from create import create
 from load import load

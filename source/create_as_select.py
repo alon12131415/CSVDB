@@ -1,4 +1,3 @@
-from consts import *
 from create import create
 from Table import Table
 from select_from import select_from

@@ -1,5 +1,5 @@
 from Parser import Parser
-from consts import *
+import consts
 from sqltokenizer import *
 import argparse
 import signal
@@ -25,7 +25,7 @@ tests = [
 
 def signal_handler(sig, frame):
     print()
-    if VERBOSE:
+    if consts.VERBOSE:
         print("good bye")
     sys.exit(0)
 
@@ -34,14 +34,14 @@ signal.signal(signal.SIGINT, signal_handler)
 
 
 def execute_command(input_text):
-    if VERBOSE:
-        print("Executing Command:", input_text)
+    if consts.VERBOSE:
+        print("Executing Command:", input_text.replace("\n", " "))
     p = Parser(input_text)
     try:
         # exc_info = sys.exc_info()
         a = p.execute()
         a[0](*a[1]) #( ͡° ͜ʖ ͡°)
-        if VERBOSE:
+        if consts.VERBOSE:
             print("Execution Success!")
     except Exception as err:
         # if not isinstance(err, FileNotFoundError):
@@ -75,6 +75,9 @@ def input_from_keyboard():
 
 def compare_files(out, good):
     errs = 0
+    if os.stat(out).st_size == 0 and os.stat(out).st_size != 0:
+        print("OUT FILE IS EMPTY!!!")
+        return False
     with open(out) as o:
         with open(good) as g:
             for i, (lo, lg) in enumerate(zip(o, g)):
@@ -101,8 +104,10 @@ def perform_tests():
         with open(os.path.join(SOURCE_DIR, "unittests", test, "test.sql")) as infile:
             currentPath = os.path.abspath(os.getcwd())
             os.chdir(os.path.join(SOURCE_DIR, "unittests", test))
-            for input_text in infile:
-                execute_command(input_text.strip())
+            input_text = infile.read()
+            commands = get_commands(input_text)
+            for command in commands:
+                execute_command(command)
             if compare_files("output.csv", "good_output.csv"):
                 print("test passed!")
             else:
@@ -132,10 +137,13 @@ def main():
         "--test",
         help="print log messages that helps debug",
         action='store_true')
-    parser.add_argument("--unit", help="apply unittests", action='store_true')
+    parser.add_argument(
+        "--unit",
+        help="apply unittests",
+        action='store_true')
     args = parser.parse_args()
-    VERBOSE = args.verbose
-    ROOT_DIR = args.rootdir
+    consts.VERBOSE = args.verbose
+    consts.ROOT_DIR = args.rootdir
     # set_const("VERBOSE", args.verbose)
     # set_const("ROOT_DIR", args.rootdir)
     os.chdir(args.rootdir)

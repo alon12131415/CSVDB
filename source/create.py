@@ -1,4 +1,4 @@
-from consts import *
+import consts
 import json
 import os
 
@@ -17,6 +17,6 @@ def create(table_name, fields, check_ex):
     l = []
     for x, y in fields:
         l.append({"field": x, "type": y})
-    out = {'schema': l, 'file_sizes': FILE_SIZES, 'file_num': 0, 'last_i': 0}
+    out = {'schema': l, 'file_sizes': consts.FILE_SIZES, 'file_num': 0, 'last_i': 0}
     # print(out)
     json.dump(out, schema, indent=True)

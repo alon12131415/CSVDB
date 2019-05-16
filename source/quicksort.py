@@ -1,5 +1,5 @@
 import random  # package for generating (pseudo) random elements
-from consts import *
+import consts
 from writer import writer
 from null import NULL
 import os

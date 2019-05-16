@@ -1,4 +1,3 @@
-from consts import *
 import os
 import shutil
 

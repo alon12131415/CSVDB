@@ -1,4 +1,3 @@
-from consts import *
 from null import NULL
 import os
 import struct
