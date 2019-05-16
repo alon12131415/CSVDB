@@ -25,7 +25,7 @@ tests = [
 
 def signal_handler(sig, frame):
     print()
-    if VERBOSE():
+    if VERBOSE:
         print("good bye")
     sys.exit(0)
 
@@ -34,14 +34,14 @@ signal.signal(signal.SIGINT, signal_handler)
 
 
 def execute_command(input_text):
-    if VERBOSE():
+    if VERBOSE:
         print("Executing Command:", input_text)
     p = Parser(input_text)
     try:
         # exc_info = sys.exc_info()
         a = p.execute()
         a[0](*a[1]) #( ͡° ͜ʖ ͡°)
-        if VERBOSE():
+        if VERBOSE:
             print("Execution Success!")
     except Exception as err:
         # if not isinstance(err, FileNotFoundError):
@@ -78,7 +78,6 @@ def compare_files(out, good):
     with open(out) as o:
         with open(good) as g:
             for i, (lo, lg) in enumerate(zip(o, g)):
-
                 if lo != lg:
                     print(f"DIFF[{'%4d'% i}]: {lo}\t{lg}")
                     errs += 1
@@ -135,20 +134,35 @@ def main():
         action='store_true')
     parser.add_argument("--unit", help="apply unittests", action='store_true')
     args = parser.parse_args()
-    set_const("VERBOSE", args.verbose)
-    set_const("ROOT_DIR", args.rootdir)
+    VERBOSE = args.verbose
+    ROOT_DIR = args.rootdir
+    # set_const("VERBOSE", args.verbose)
+    # set_const("ROOT_DIR", args.rootdir)
     os.chdir(args.rootdir)
     if args.unit:
         perform_tests()
         return
     if args.run:
         with open(os.path.join(SOURCE_DIR, args.run)) as infile:
-            for input_text in infile:
-                execute_command(input_text.strip())
+            input_text = infile.read()
+            for command in get_commands(input_text):
+                execute_command(command)
         return
 
     main_loop()
 
+def get_commands(text):
+    tokenizer = SqlTokenizer(text)
+    commands = []
+    prev_i = 0
+    tok, val = tokenizer.next_token()
+    while tok != SqlTokenKind.EOF:
+        if tok == SqlTokenKind.OPERATOR and val == ";":
+            commands.append(text[prev_i: tokenizer._i_next])
+            prev_i = tokenizer._i_next
+        tok, val = tokenizer.next_token()
+    return commands
 
 if __name__ == '__main__':
     main()
+

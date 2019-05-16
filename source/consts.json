@@ -1,7 +1,0 @@
-{
- "LINE_BATCHES": 10000,
- "MAX_PRINT_IN_SELECT": 200,
- "ROOT_DIR": "../",
- "FILE_SIZES": 1024,
- "VERBOSE": false
-}

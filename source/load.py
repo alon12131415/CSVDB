@@ -13,7 +13,7 @@ def load(file_name, table_name, ignored):
         file_reader = csv.reader(csvfile)
         i = 0
         current_batch = table.last_i
-        max_size = FILE_SIZES()
+        max_size = FILE_SIZES
         current_fp_index = table.file_num
         for field_name in table.field_names:
             table.columns[field_name].setFP(current_fp_index)

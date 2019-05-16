@@ -10,6 +10,7 @@ class writer(object):
         if batching:
             self.current_index = 0
             out += str(self.current_index)
+        self.batching = batching
         self.csvfile = open(os.path.join(out), 'w+', newline='')
         self.csvwriter = csv.writer(self.csvfile)
         self.lines = []
@@ -20,9 +21,9 @@ class writer(object):
 
     def add_line(self, line):
         self.lines.append(line)
-        if len(self.lines) >= LINE_BATCHES():
+        if len(self.lines) >= LINE_BATCHES:
             self.flush()
-            if batching:
+            if self.batching:
                 self.current_index += 1
                 self.csvfile.close()
                 out = self.base_file_name + str(self.current_index)
@@ -33,5 +34,7 @@ class writer(object):
 
 
     def done(self):
+        x = len(self.lines) == 0
         self.flush()
         self.csvfile.close()
+        return x

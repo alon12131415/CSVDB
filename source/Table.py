@@ -28,7 +28,7 @@ class Table:
         self.line_batches = full_file["file_sizes"]
         self.file_num = full_file["file_num"]
         self.last_i = full_file["last_i"]
-        set_const("FILE_SIZES", self.line_batches)
+        FILE_SIZES = self.line_batches
         schema = full_file['schema']
         # define local objects that help us get through the rough command ;-)
 
@@ -289,37 +289,37 @@ class Table:
                         read_func,
                         False)
                     sorted_files.append(a)
+                if out_file_writer.done(): sorted_files.pop(len(sorted_files) - 1) #in case last file is empty
                 final_file = self.merge_files(
                     sorted_files, order_mapped, 0, compareFunc)  # merge sorted files
                 if isinstance(final_file, list):
                     final_file = final_file[0]
                 os.rename(os.path.join(self.name, final_file), out)
                 self.clean_up()
-            out_file_writer.done()
             os.remove(os.path.join(self.name, 'atmp.csv'))
             return
 
         if order:
             final = []
-            fp_list = []
             file_num = self.line_batches
-            order_mapped = list(
-                map(lambda x: (fields.index(x[0]), x[1]), order))
-            fieldTypes = list(map(lambda x: self.type_from_name(nicknames[x]), fields))
-            compareFunc = get_compare(order_mapped, fieldTypes)
 
-            for ind in range(self.file_num):  # sort files seperately
-                a = self.sort_internally(
-                    order_mapped,
-                    ind,
-                    fields,
-                    nicknames,
-                    needed_fields,
-                    where,
-                    compareFunc)
-                fp_list.append(a)
-            final_file = self.merge_files(
-                fp_list, order_mapped, 0, compareFunc)  # merge sorted files
+            # fp_list = []
+            # for ind in range(self.file_num):  # sort files seperately
+            #     order_mapped = list(
+            #         map(lambda x: (fields.index(x[0]), x[1]), order))
+            #     fieldTypes = list(map(lambda x: self.type_from_name(nicknames[x]), fields))
+            #     compareFunc = get_compare(order_mapped, fieldTypes)
+            #     a = self.sort_internally(
+            #         order_mapped,
+            #         ind,
+            #         fields,
+            #         nicknames,
+            #         needed_fields,
+            #         where,
+            #         compareFunc)
+            #     fp_list.append(a)
+            final_file = self.sort_files(fields, order, nicknames, needed_fields, where)
+            
             if isinstance(final_file, list):
                 final_file = final_file[0]
             if out is not None:  # no_print
@@ -334,7 +334,7 @@ class Table:
 
             self.clean_up()  # delete all tmp files :)
 
-            if VERBOSE():
+            if VERBOSE:
                 print("took {} seconds".format(time.time() - start_time))
             return
 
@@ -342,9 +342,9 @@ class Table:
             csvwriter = writer(out)
         printCount = 0
         current_batch = 0
-        max_size = FILE_SIZES()
+        max_size = FILE_SIZES
         current_fp_index = 0
-        while printCount < MAX_PRINT_IN_SELECT():
+        while printCount < MAX_PRINT_IN_SELECT:
             if current_batch > max_size - 1:
                 current_batch = 0
                 current_fp_index += 1
@@ -368,8 +368,30 @@ class Table:
                 printCount += 1
         if out is not None:
             csvwriter.done()
-        if VERBOSE():
+        if VERBOSE:
             print("took {} seconds".format(time.time() - start_time))
+
+    def sort_files(self, fields, order, nicknames, needed_fields, where):
+        fp_list = []
+        for ind in range(self.file_num):  # sort files seperately
+            order_mapped = list(
+                map(lambda x: (fields.index(x[0]), x[1]), order))
+            fieldTypes = list(map(lambda x: self.type_from_name(nicknames[x]), fields))
+            compareFunc = get_compare(order_mapped, fieldTypes)
+            a = self.sort_internally(
+                order_mapped,
+                ind,
+                fields,
+                nicknames,
+                needed_fields,
+                where,
+                compareFunc)
+            fp_list.append(a)
+        final_file = self.merge_files(
+                fp_list, order_mapped, 0, compareFunc)  # merge sorted files
+        return final_file
+
+
 
     def sort_internally(
             self,
@@ -396,7 +418,7 @@ class Table:
         csvwriter.flush()
         # getRow = lambda fields, where: [self.columns[field].getRow(where) for field in fields]
         rows = []
-        for _ in range(FILE_SIZES()):
+        for _ in range(FILE_SIZES):
             row = getRow(where, fields, self)
             if needInternal:
                 if row[0][0]:
@@ -406,7 +428,7 @@ class Table:
                 rows.append([x[2] for x in row])
             else:
                 if row[1]: break
-                rows.append(row)
+                rows.append(row[0])
 
         csvwriter.lines = sorted(rows, key=functools.cmp_to_key(compareFunc))
         csvwriter.done()

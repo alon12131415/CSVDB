@@ -39,6 +39,10 @@ def get_compare(ind, types):
 def merge(name1, name2, table_name, iteration, ind, compareFunc):
     out = "tmp_{}_{}".format(iteration, name1[3:])
     csvwriter = writer(os.path.join(table_name, out))
+    if isinstance(name1, list):
+        name1 = name1[0]
+    if isinstance(name2, list):
+        name2 = name2[0]
     f1 = open(os.path.join(table_name, name1))
     f2 = open(os.path.join(table_name, name2))
     csv1 = csv.reader(f1)
