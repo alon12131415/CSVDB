@@ -7,7 +7,7 @@ class NULL:
         pass
 
     def __repr__(self):
-        return "NULL"
+        return ""
 
     def __lt__(self, other):
         return True

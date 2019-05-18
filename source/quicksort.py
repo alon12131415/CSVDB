@@ -17,12 +17,12 @@ def get_compare(ind, types):
                 f1, f2 = str(x1), str(x2)
             elif types[i[0]] in ("int", "timestamp"):
                 f1, f2 = int(x1) if x1 not in [
-                    "NULL", NULL()] else NULL(), int(x2) if x2 not in [
-                    "NULL", NULL()] else NULL()
+                    "", NULL()] else NULL(), int(x2) if x2 not in [
+                    "", NULL()] else NULL()
             elif types[i[0]] == "float":
                 f1, f2 = float(x1) if x1 not in [
-                    "NULL", NULL()] else NULL(), float(x2) if x2 not in [
-                    "NULL", NULL()] else NULL()
+                    "", NULL()] else NULL(), float(x2) if x2 not in [
+                    "", NULL()] else NULL()
             else:
                 raise NameError("Type Not Recognized!", types[i[0]])
             if i[1] == "asc":

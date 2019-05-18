@@ -224,7 +224,6 @@ class Table:
         having - like where
         order - list of: [(field, ASC/DESC)*]
         """
-        start_time = time.time()
         fields, nicknames, needed_fields = self.get_final_field(_fields)
         if any((isinstance(nicknames[field], tuple) for field in fields)):  # any aggs
             needed_fields_list = list(needed_fields)
@@ -262,7 +261,7 @@ class Table:
                 if fname: file_list.append(fname)
 
             if out_file_writer.done(): file_list.pop(len(file_list) - 1)
-            if need_order:                
+            if need_order:
                 final_file = self.sort_files(fields, order, nicknames, needed_fields, where, None, False,file_list)
                 os.rename(os.path.join(self.name, final_file), out)
                 self.clean_up()
@@ -276,7 +275,7 @@ class Table:
             final_file = self.sort_files(fields, order, nicknames, needed_fields, where, \
                 lambda where, fields, self: [self.columns[field].getRow(where) for field in fields], True,
                 range(self.file_num))
-            
+
             if isinstance(final_file, list):
                 final_file = final_file[0]
             if out is not None:  # no_print
@@ -289,8 +288,7 @@ class Table:
 
                 csvfile.close()
             self.clean_up()  # delete all tmp files :)
-            if consts.VERBOSE:
-                print("took {} seconds".format(time.time() - start_time))
+
             return
 
         if out is not None:
@@ -323,8 +321,6 @@ class Table:
                 printCount += 1
         if out is not None:
             csvwriter.done()
-        if consts.VERBOSE:
-            print("took {} seconds".format(time.time() - start_time))
 
     def sort_files(self, fields, order, nicknames, needed_fields, where, getRow, needInternal, generator):
         fp_list = []
@@ -342,7 +338,7 @@ class Table:
                     try:
                         return next(csvreader), False
                     except StopIteration:
-                        return None, True    
+                        return None, True
             a = self.sort_internally(
                 order_mapped,
                 ind,

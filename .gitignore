@@ -3,3 +3,4 @@ input.txt
 .gitignore
 .idea
 source/unittests/clicks
+csvdb_tests/zclicks

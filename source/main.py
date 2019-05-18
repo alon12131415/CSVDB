@@ -1,6 +1,7 @@
 from Parser import Parser
-import consts
 from sqltokenizer import *
+import consts
+import time
 import argparse
 import signal
 import sys
@@ -36,13 +37,14 @@ signal.signal(signal.SIGINT, signal_handler)
 def execute_command(input_text):
     if consts.VERBOSE:
         print("Executing Command:", input_text.replace("\n", " "))
+        start_time = time.time()
     p = Parser(input_text)
     try:
         # exc_info = sys.exc_info()
         a = p.execute()
         a[0](*a[1]) #( ͡° ͜ʖ ͡°)
         if consts.VERBOSE:
-            print("Execution Success!")
+            print("Execution Success!, took: {}".format(time.time() - start_time))
     except Exception as err:
         # if not isinstance(err, FileNotFoundError):
         traceback.print_tb(err.__traceback__)
@@ -99,6 +101,7 @@ please finish a command with a ; IN A NEW LINE.""")
 
 
 def perform_tests():
+    failed = False
     for test in tests:
         print("[running test]: ", test)
         with open(os.path.join(SOURCE_DIR, "unittests", test, "test.sql")) as infile:
@@ -111,13 +114,31 @@ def perform_tests():
             if compare_files("output.csv", "good_output.csv"):
                 print("test passed!")
             else:
-                input("test did not pass! (press ENTER to continue)")
+                failed = True
+                break
             print("------")
             if os.path.exists("output.csv"):
                 os.remove("output.csv")
             if os.path.exists("tmp.txt"):
                 os.remove("tmp.txt")
             os.chdir(currentPath)
+    if consts.ASCII:
+        import print_pikachu
+        if not failed:
+            print_pikachu.lol(print_pikachu.bart)
+#             print(r"""
+# ___________              __    __________                                 .___._.
+# \__    ___/___   _______/  |_  \______   \_____    ______ ______ ____   __| _/| |
+#   |    |_/ __ \ /  ___/\   __\  |     ___/\__  \  /  ___//  ___// __ \ / __ | | |
+#   |    |\  ___/ \___ \  |  |    |    |     / __ \_\___ \ \___ \\  ___// /_/ |  \|
+#   |____| \___  >____  > |__|    |____|    (____  /____  >____  >\___  >____ |  __
+#              \/     \/                         \/     \/     \/     \/     \/  \/
+# """)
+        else:
+            print_pikachu.lol(print_pikachu.pikachu)
+    word = "test passed!"
+    # # DO NOT TRY TO UNDERSTAND THIS CODE, it is the code from last year's printing sentences as big letters ;)
+    # for a,b in [(-130,0),(-130,1),(-130,2),(-130,3),(-129,0),(-129,1),(-129,2),(-129,3)]:print(''.join([['{0:08b}'.format(([1109661696, 4342398, 2084731904, 8143426, 1078082560, 3949120, 1111653376, 8143426, 2017492480, 8273984, 2017492480, 4210752, 1078082560, 3949132, 2118271488, 4342338, 269498368, 3674128, 269498368, 6328336, 1884045824, 4342856, 1077952512, 8273984, 1381656064, 4342338, 1382171136, 4343370, 1111636992, 3949122, 2084731904, 4210752, 1111636992, 4015690, 2084731904, 4342856, 1010842624, 8126978, 269516288, 1052688, 1111638528, 3949122, 608469504, 1052712, 1385333248, 6707794, 270811648, 8537128, 675578368, 3674128, 268729856, 16662560][2*ord(x)+a]//(256**c))%256) for c in range(4)][b] if ord('A')<=ord(x)<=ord('Z') else '00000000' for x in word.upper()]).replace('0',' ').replace('1','\x90'))
 
 
 def main():
@@ -141,20 +162,28 @@ def main():
         "--unit",
         help="apply unittests",
         action='store_true')
+    parser.add_argument(
+        "--ascii",
+        help="displays ascii art",
+        action='store_true')
     args = parser.parse_args()
     consts.VERBOSE = args.verbose
     consts.ROOT_DIR = args.rootdir
+    consts.ASCII = args.ascii
     # set_const("VERBOSE", args.verbose)
     # set_const("ROOT_DIR", args.rootdir)
+    currentPath = os.getcwd()
     os.chdir(args.rootdir)
     if args.unit:
         perform_tests()
+        os.chdir(currentPath)
         return
     if args.run:
         with open(os.path.join(SOURCE_DIR, args.run)) as infile:
             input_text = infile.read()
             for command in get_commands(input_text):
                 execute_command(command)
+        os.chdir(currentPath)
         return
 
     main_loop()
