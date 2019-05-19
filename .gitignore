@@ -4,3 +4,4 @@ input.txt
 .idea
 source/unittests/clicks
 csvdb_tests/zclicks
+.vs

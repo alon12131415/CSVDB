@@ -4,3 +4,4 @@ ROOT_DIR = "../"
 FILE_SIZES = 1048576
 VERBOSE = False
 ASCII = False
+SOURCE_DIR=""
