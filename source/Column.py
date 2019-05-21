@@ -22,13 +22,16 @@ columnLib.Column_getRow.argstypes = [ctypes.c_void_p]
 columnLib.Column_getRow.restype = None
 
 columnLib.Column_getIntVal.argstypes = [ctypes.c_void_p]
-columnLib.Column_getIntVal.restype = ctypes.c_int
+columnLib.Column_getIntVal.restype = ctypes.c_int64
 
 columnLib.Column_getVarcharVal.argstypes = [ctypes.c_void_p]
-columnLib.Column_getVarcharVal.restype = ctypes.c_char_p
+columnLib.Column_getVarcharVal.restype = ctypes.c_void_p#not c_char_p because c_char_p will be converted to string, and we will not be able to pass it to deleteVarChar. 
 
 columnLib.DeleteVarchar.argstypes = [ctypes.c_char_p]
 columnLib.DeleteVarchar.restype = None
+
+columnLib.Column_getFloatVal.argstypes = [ctypes.c_void_p]
+columnLib.Column_getFloatVal.restype = ctypes.c_double
 
 columnLib.Column_getFinished.argstypes = [ctypes.c_void_p]
 columnLib.Column_getFinished.restype = ctypes.c_bool
@@ -48,13 +51,16 @@ columnLib.CreateIntWhereConst.restype = ctypes.c_void_p
 columnLib.CreateVarcharWhereConst.argstypes = [ctypes.c_char_p]
 columnLib.CreateVarcharWhereConst.restype = ctypes.c_void_p
 
+columnLib.CreateFloatWhereConst.argstypes = [ctypes.c_double]
+columnLib.CreateFloatWhereConst.restype = ctypes.c_void_p
+
 class Column:
 
 	def __init__(self, table_name, field_name, field_type, mode = "rb"):
-		self.use_column_dll = field_type in ["int", "varchar"] and mode == "rb" 
+		self.use_column_dll = field_type in ["int", "varchar", "float"] and mode == "rb" 
 		if self.use_column_dll:
-			self.obj = columnLib.Column_new(bytes(os.path.join(table_name, field_name + "0" + '.ga'), encoding = "ascii"),
-			{"int" : 0, "varchar" : 1, "float" : 2, "timestamp" : 3}[field_type])
+			self.obj = ctypes.c_void_p(columnLib.Column_new(bytes(os.path.join(table_name, field_name + "0" + '.ga'), encoding = "ascii"),
+			{"int" : 0, "varchar" : 1, "float" : 2, "timestamp" : 3}[field_type]))
 			
 			self.table_name = table_name
 			self.field_name = field_name
@@ -97,8 +103,9 @@ class Column:
 			if not self.where_set_up:
 				if where != {} and where["field"] == self.field_name:	
 					columnLib.Column_setOp(self.obj, {"<" : 0, "<=" : 1, ">" : 2, ">=" : 3, "==" : 4, "<>" : 5, "is" : 6, "is not" : 7}[where["op"]])
-					if(self.field_type == "int"):	columnLib.Column_setWhereConst(self.obj, columnLib.CreateIntWhereConst(where["const"]))
-					if(self.field_type == "varchar"):	columnLib.Column_setWhereConst(self.obj, columnLib.CreateVarcharWhereConst(where["const"]))
+					if(self.field_type == "int"):	columnLib.Column_setWhereConst(self.obj, ctypes.c_void_p(columnLib.CreateIntWhereConst(where["const"])))
+					if(self.field_type == "varchar"):	columnLib.Column_setWhereConst(self.obj, ctypes.c_void_p(columnLib.CreateVarcharWhereConst(where["const"])))
+					if(self.field_type == "float"):	columnLib.Column_setWhereConst(self.obj, ctypes.c_void_p(columnLib.CreateFloatWhereConst(where["const"])))
 				self.where_set_up = True
 			
 			columnLib.Column_getRow(self.obj)
@@ -107,8 +114,9 @@ class Column:
 			if(self.field_type == "int"): value = columnLib.Column_getIntVal(self.obj) if not columnLib.Column_getIsNull(self.obj) else ""
 			if(self.field_type == "varchar"):
 				ca = columnLib.Column_getVarcharVal(self.obj)
-				value = ca.decode("ascii")
-				#columnLib.DeleteVarchar(ca)#release the memory
+				value = ctypes.c_char_p(ca).value.decode("ascii")
+				columnLib.DeleteVarchar(ctypes.c_char_p(ca))#release the memory
+			if(self.field_type == "float"): value = columnLib.Column_getFloatVal(self.obj) if not columnLib.Column_getIsNull(self.obj) else ""
 			return finished, passedTheWhere, value
 		
 		def satisfiesWhere(x):  # better solution would be eval but fine - shut up
@@ -159,6 +167,7 @@ class Column:
 			val = self.fp.read(8)
 			if not val:
 				return True, True, None
+			print("should read: {}".format(struct.unpack(">Q", val)[0]))
 			if struct.unpack(">Q", val)[0] == 2**63:
 				return False, satisfiesWhere(None), NULL()
 			val = struct.unpack(">d", val)[0]

@@ -22,9 +22,9 @@ namespace csvdb
 		void getRow();
 		bool finished = false;
 		bool passedTheWhere;
-		int fileMode;
+		std::ios_base::openmode fileMode;
 		WhereOperand op = WhereOperand::none;
-		TableValue* whereConst;
+		TableValue* whereConst = nullptr;
 		TableValue* lastVal;
 		std::ifstream currFile;
 	};

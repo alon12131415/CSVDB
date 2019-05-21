@@ -1,8 +1,8 @@
-#include "stdafx.h"
 #include "column.hpp"
 #include <string>
 #include "tableint.hpp"
 #include "tablevarchar.hpp"
+#include "tablefloat.hpp"
 #include "tablevalue.hpp"
 #include <iostream>
 
@@ -20,6 +20,11 @@ namespace csvdb
 		case(csvdbVarchar):
 			lastVal = new TableVarchar();
 			fileMode = std::ios::in;
+			currFile.open(path, fileMode);
+			break;
+		case(csvdbFloat):
+			lastVal = new TableFloat();
+			fileMode = std::ios::in | std::ios::binary;
 			currFile.open(path, fileMode);
 			break;
 		}

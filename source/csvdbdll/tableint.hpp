@@ -1,7 +1,6 @@
 #ifndef CSVDB_TABLEINT_H
 #define CSVDB_TABLEINT_H
 
-#include "stdafx.h"
 #include "tablevalue.hpp"
 
 namespace csvdb

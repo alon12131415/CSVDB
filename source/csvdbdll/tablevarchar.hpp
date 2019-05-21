@@ -1,7 +1,6 @@
 #ifndef CSVDB_TABLEVARCHAR_H
 #define CSVDB_TABLEVARCHAR_H
 
-#include "stdafx.h"
 #include "tablevalue.hpp"
 #include <string>
 

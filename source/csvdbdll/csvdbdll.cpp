@@ -1,11 +1,11 @@
 // csvdbdll.cpp : Defines the exported functions for the DLL application.
 //
 
-#include "stdafx.h"
 #include "column.hpp"
 #include "tablevalue.hpp"
 #include "tableint.hpp"
 #include "tablevarchar.hpp"
+#include "tablefloat.hpp"
 #include <iostream>
 
 namespace csvdb
@@ -50,7 +50,11 @@ extern "C"
 	}
 	__declspec(dllexport) void DeleteVarchar(char* c)
 	{
-		delete c;
+		delete[] c;
+	}
+	__declspec(dllexport) double Column_getFloatVal(csvdb::Column* column)
+	{
+		return dynamic_cast<csvdb::TableFloat*>(column->lastVal)->getVal();
 	}
 
 	__declspec(dllexport) bool Column_getFinished(csvdb::Column* column)
@@ -79,5 +83,10 @@ extern "C"
 	__declspec(dllexport) csvdb::TableValue* CreateVarcharWhereConst(char* val)
 	{
 		return new csvdb::TableVarchar(val);
+	}
+	
+	__declspec(dllexport) csvdb::TableValue* CreateFloatWhereConst(double val)
+	{
+		return new csvdb::TableFloat(val);
 	}
 }

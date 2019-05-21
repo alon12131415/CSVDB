@@ -21,7 +21,8 @@ tests = [
 	"order_where",
 	"big_order",
 	"group1",
-	"group_order"]
+	"group_order",
+	"float_null"]
 
 
 def signal_handler(sig, frame):
