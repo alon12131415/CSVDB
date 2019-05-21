@@ -21,7 +21,8 @@ tests = [
     "order_where",
     "big_order",
     "group1",
-    "group_order"]
+    "group_order",
+    "group_order_having"]
 
 
 def signal_handler(sig, frame):
@@ -117,6 +118,7 @@ def perform_tests():
                 failed = True
                 break
             print("------")
+            input()
             if os.path.exists("output.csv"):
                 os.remove("output.csv")
             if os.path.exists("tmp.txt"):
