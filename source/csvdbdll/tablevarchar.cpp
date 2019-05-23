@@ -5,7 +5,7 @@ namespace csvdb
 {
 	std::ifstream& TableVarchar::readFromStream(std::ifstream& is)
 	{
-		std::getline(is, val);
+		std::getline(is, val, '\0');
 		return is;
 	}
 	std::string TableVarchar::getVal() const

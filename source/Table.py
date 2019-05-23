@@ -15,7 +15,7 @@ def line_joiner(line): return ",".join(line)
 
 class Table:
 
-	def __init__(self, table_name, mode="rb"):
+	def __init__(self, table_name):
 		scheme_path = os.path.join(table_name, "table.json")
 		if not os.path.isfile(scheme_path):
 			raise FileNotFoundError(
@@ -39,7 +39,8 @@ class Table:
 		for x in schema:
 			field_name = x["field"]
 			field_type = x["type"]
-			self.columns[field_name] = Column.Column(table_name, field_name, field_type, mode)
+			self.columns[field_name] = Column.Column(table_name, field_name, field_type,
+				consts.FILE_SIZES, self.file_num)
 			self.field_names.append(field_name)
 			self.name2type[field_name] = field_type
 
@@ -297,13 +298,6 @@ class Table:
 		max_size = consts.FILE_SIZES
 		current_fp_index = 0
 		while printCount < consts.MAX_PRINT_IN_SELECT:
-			if current_batch > max_size - 1:
-				current_batch = 0
-				current_fp_index += 1
-				if (current_fp_index >= self.file_num):
-					break
-				for field_name in self.field_names:
-					self.columns[field_name].setFP(current_fp_index)
 			current_batch += 1
 			field_res = {field: self.columns[field].getRow(
 				where) for field in needed_fields}

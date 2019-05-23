@@ -1,4 +1,4 @@
-from consts import *
+import consts
 import os
 import csv
 
@@ -21,7 +21,7 @@ class writer(object):
 
 	def add_line(self, line):
 		self.lines.append(line)
-		if len(self.lines) >= LINE_BATCHES:
+		if len(self.lines) >= consts.FILE_SIZES:
 			self.flush()
 			if self.batching:
 				self.current_index += 1

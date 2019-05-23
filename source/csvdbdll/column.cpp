@@ -1,6 +1,7 @@
 #include "column.hpp"
 #include <string>
 #include "tableint.hpp"
+#include "tabletimestamp.hpp"
 #include "tablevarchar.hpp"
 #include "tablefloat.hpp"
 #include "tablevalue.hpp"
@@ -10,24 +11,24 @@ namespace csvdb
 {
 	Column::Column(char* path, TableValueType fieldType)
 	{
+		fileMode = std::ios::in | std::ios::binary;
+		currFile.open(path, fileMode);
 		switch (fieldType)
 		{
 		case(csvdbInt):
 			lastVal = new TableInt();
-			fileMode = std::ios::in | std::ios::binary;
-			currFile.open(path, fileMode);
 			break;
 		case(csvdbVarchar):
 			lastVal = new TableVarchar();
-			fileMode = std::ios::in;
-			currFile.open(path, fileMode);
 			break;
 		case(csvdbFloat):
 			lastVal = new TableFloat();
-			fileMode = std::ios::in | std::ios::binary;
-			currFile.open(path, fileMode);
+			break;
+		case(csvdbTimestamp):
+			lastVal = new TableTimestamp();
 			break;
 		}
+
 	}
 	Column::~Column()
 	{

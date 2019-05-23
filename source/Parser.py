@@ -174,7 +174,7 @@ class Parser():
 		if self._val == "order":
 			self.expect(SqlTokenKind.KEYWORD, "by", ass=True)
 			while True:
-				order_way = "desc"
+				order_way = "asc"
 				self.next_tokens()
 				f = self._val
 				self.next_tokens()
