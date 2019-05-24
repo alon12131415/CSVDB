@@ -37,7 +37,7 @@ def get_compare(ind, types):
 
 
 def merge(name1, name2, table_name, iteration, ind, compareFunc):
-	out = "tmp_{}_{}".format(iteration, name1[3:])
+	out = "tmp_{}_{}".format(iteration, name1[3:].strip("_"))
 	csvwriter = writer(os.path.join(table_name, out))
 	if isinstance(name1, list):
 		name1 = name1[0]
@@ -53,8 +53,6 @@ def merge(name1, name2, table_name, iteration, ind, compareFunc):
 	a = 0
 	b = 0
 	while True:
-		# if list(line1[i[0]] for i in ind)[0] < list(line2[i[0]] for i in
-		# ind)[0]:
 		if compareFunc(line1, line2) == -1:
 			csvwriter.add_line(line1)
 			a += 1

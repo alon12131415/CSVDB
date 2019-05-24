@@ -5,6 +5,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import itertools
 
 g_prog = None
 
@@ -26,10 +27,10 @@ def compare_files(out, good):
     errs = 0
     with open(out) as o:
         with open(good) as g:
-            for i, (lo, lg) in enumerate(zip(o, g)):
+            for i, (lo, lg) in enumerate(itertools.zip_longest(o, g, fillvalue="\n")):
 
                 if lo != lg:
-                    print(f"DIFF[{'%4d'% i}]: {lo}\t{lg}")
+                    print(f"DIFF[{'%4d'% i}]: {repr(lo)}\t{repr(lg)}")
                     errs += 1
     if errs:
         raise RuntimeError("Test failed")

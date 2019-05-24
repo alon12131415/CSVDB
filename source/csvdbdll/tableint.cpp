@@ -1,6 +1,6 @@
 #include "tableint.hpp"
 #include <fstream>
-
+#include <iostream>
 namespace csvdb
 {
 	std::ifstream& TableInt::readFromStream(std::ifstream& is)

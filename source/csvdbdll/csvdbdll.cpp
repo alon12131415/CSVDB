@@ -16,13 +16,13 @@ namespace csvdb
 
 extern "C"
 {
-	csvdb::Column* Column_new(char* path, int tableValueType)
+	csvdb::Column* Column_new(char* path, int tableValueType, int file_sizes, int file_num)
 	{
-		return new csvdb::Column(path, (csvdb::TableValueType)tableValueType);
+		return new csvdb::Column(path, (csvdb::TableValueType)tableValueType, file_sizes, file_num);
 	}
-	void Column_setFP(csvdb::Column* column, char* path)
+	void Column_setFP(csvdb::Column* column, int index)
 	{
-		column->setFP(path);
+		column->setFP(index);
 	}
 	void Column_setOp(csvdb::Column* column, int whereOperand)
 	{
@@ -95,7 +95,7 @@ extern "C"
 	{
 		return new csvdb::TableVarchar(val);
 	}
-	
+
 	csvdb::TableValue* CreateFloatWhereConst(double val)
 	{
 		return new csvdb::TableFloat(val);

@@ -10,6 +10,7 @@ import sys
 import traceback
 import filecmp
 import inspect
+import itertools
 tests = [
 	"age_null",
 	"cmp_null",
@@ -22,7 +23,8 @@ tests = [
 	"big_order",
 	"group1",
 	"group_order",
-	"float_null"]
+	"float_null",
+	"timestamp_test"]
 
 
 def signal_handler(sig, frame):
@@ -83,10 +85,11 @@ def compare_files(out, good):
 		return False
 	with open(out) as o:
 		with open(good) as g:
-			for i, (lo, lg) in enumerate(zip(o, g)):
+			for i, (lo, lg) in enumerate(itertools.zip_longest(o, g, fillvalue="")):
 				if lo != lg:
+					print(f"DIFF[{'%4d'% i}]: {repr(lo)}\t{repr(lg)}")
+					input()
 					print("error")
-					print(f"DIFF[{'%4d'% i}]: {lo}\t{lg}")
 					errs += 1
 	if errs:
 		return False
@@ -106,37 +109,34 @@ def perform_tests():
 	failed = False
 	for test in tests:
 		print("[running test]: ", test)
-		with open(os.path.join(consts.SOURCE_DIR, "unittests", test, "test.sql")) as infile:
-			currentPath = os.path.abspath(os.getcwd())
-			os.chdir(os.path.join(consts.SOURCE_DIR, "unittests", test))
-			input_text = infile.read()
-			commands = get_commands(input_text)
-			for command in commands:
-				execute_command(command)
-			if compare_files("output.csv", "good_output.csv"):
-				print("test passed!")
-			else:
-				failed = True
-			print("------")
-			if os.path.exists("output.csv"):
-				os.remove("output.csv")
-			if os.path.exists("tmp.txt"):
-				os.remove("tmp.txt")
-			os.chdir(currentPath)
-			if failed:
-				break
+		for file_size in range(2, 10):
+			consts.FILE_SIZES = file_size
+			print("using file sizes of: ", consts.FILE_SIZES)
+			with open(os.path.join(consts.SOURCE_DIR, "unittests", test, "test.sql")) as infile:
+				currentPath = os.path.abspath(os.getcwd())
+				os.chdir(os.path.join(consts.SOURCE_DIR, "unittests", test))
+				input_text = infile.read()
+				commands = get_commands(input_text)
+				for command in commands:
+					execute_command(command)
+				if compare_files("output.csv", "good_output.csv"):
+					print("test passed!")
+				else:
+					failed = True
+				print("------")
+				if os.path.exists("output.csv"):
+					os.remove("output.csv")
+				if os.path.exists("tmp.txt"):
+					os.remove("tmp.txt")
+				os.chdir(currentPath)
+				if failed:
+					break
+		if failed:
+			break
 	if consts.ASCII:
 		import print_pikachu
 		if not failed:
 			print_pikachu.lol(print_pikachu.bart)
-#			 print(r"""
-# ___________			  __	__________								 .___._.
-# \__	___/___   _______/  |_  \______   \_____	______ ______ ____   __| _/| |
-#   |	|_/ __ \ /  ___/\   __\  |	 ___/\__  \  /  ___//  ___// __ \ / __ | | |
-#   |	|\  ___/ \___ \  |  |	|	|	 / __ \_\___ \ \___ \\  ___// /_/ |  \|
-#   |____| \___  >____  > |__|	|____|	(____  /____  >____  >\___  >____ |  __
-#			  \/	 \/						 \/	 \/	 \/	 \/	 \/  \/
-# """)
 		else:
 			print_pikachu.lol(print_pikachu.pikachu)
 	word = "test passed!"

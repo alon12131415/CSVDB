@@ -26,9 +26,9 @@ class Table:
 		schema_file.close()
 
 		self.line_batches = full_file["file_sizes"]
-		self.file_num = full_file["file_num"]
+		self.file_num = full_file["file_num"] + 1
 		self.last_i = full_file["last_i"]
-		FILE_SIZES = self.line_batches
+		consts.FILE_SIZES = self.line_batches
 		schema = full_file['schema']
 		# define local objects that help us get through the rough command ;-)
 
@@ -263,6 +263,8 @@ class Table:
 			if out_file_writer.done(): file_list.pop(len(file_list) - 1)
 			if need_order:
 				final_file = self.sort_files(fields, order, nicknames, needed_fields, where, None, False,file_list)
+				if os.path.isfile(out): #FUCK WINDOWS!
+					os.remove(out)
 				os.rename(os.path.join(self.name, final_file), out)
 				self.clean_up()
 			os.remove(os.path.join(self.name, 'atmp.csv'))
@@ -271,7 +273,6 @@ class Table:
 		if order:
 			final = []
 			file_num = self.line_batches
-
 			final_file = self.sort_files(fields, order, nicknames, needed_fields, where, \
 				lambda where, fields, self: [self.columns[field].getRow(where) for field in fields], True,
 				range(self.file_num))
@@ -279,6 +280,8 @@ class Table:
 			if isinstance(final_file, list):
 				final_file = final_file[0]
 			if out is not None:  # no_print
+				if os.path.isfile(out): #FUCK WINDOWS!
+					os.remove(out)
 				os.rename(os.path.join(self.name, final_file), out)
 			else:
 				csvfile = open(os.path.join(self.name, final_file), "r")
@@ -367,7 +370,6 @@ class Table:
 		if needInternal:
 			for field_name in self.field_names:
 				self.columns[field_name].setFP(index)
-
 		out = "tmp{}".format(index)
 		csvwriter = writer(os.path.join(self.name, out))
 		csvwriter.flush()
@@ -396,15 +398,9 @@ class Table:
 		returns filename of the output file.
 		"""
 		if len(file_lst) == 1:
-			return file_lst
+			return file_lst[0]
 		elif len(file_lst) == 2:
-			return merge(
-				file_lst[0],
-				file_lst[1],
-				self.name,
-				it + 1,
-				ind,
-				compareFunc)
+			return merge(file_lst[0],file_lst[1],self.name,it + 1,ind,compareFunc)
 		else:
 			file1 = self.merge_files(
 				file_lst[:len(file_lst) // 2], ind, it, compareFunc)

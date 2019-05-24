@@ -9,10 +9,13 @@
 
 namespace csvdb
 {
-	Column::Column(char* path, TableValueType fieldType)
+	Column::Column(char* path, TableValueType fieldType, int _file_sizes, int _file_num)
 	{
+		file_sizes = _file_sizes;
+		file_num = _file_num;
+		base_file_path = std::string(path);
 		fileMode = std::ios::in | std::ios::binary;
-		currFile.open(path, fileMode);
+		currFile.open(base_file_path + "0.ga", fileMode);
 		switch (fieldType)
 		{
 		case(csvdbInt):
@@ -44,15 +47,26 @@ namespace csvdb
 	{
 		whereConst = whereConst_;
 	}
-	void Column::setFP(char* newPath)
+	void Column::setFP(int index)
 	{
 		currFile.close();
-		currFile.open(newPath, fileMode);
+		currFile.open(base_file_path + std::to_string(index) + ".ga", fileMode);
 	}
 	void Column::getRow()
 	{
+		if (current_batch > file_sizes - 1){
+			current_batch = 0;
+			current_fp_index++;
+			if (current_fp_index >= file_num){
+				finished = true;
+				passedTheWhere = true;
+				return;
+			}
+			setFP(current_fp_index);
+		}
 		currFile >> *lastVal;
 		passedTheWhere = lastVal->satisfiesWhere(op, whereConst);
 		finished = currFile.eof();
+		current_batch++;
 	}
 }

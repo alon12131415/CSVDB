@@ -1,5 +1,6 @@
 #include "tablevarchar.hpp"
 #include <fstream>
+#include <iostream>
 
 namespace csvdb
 {

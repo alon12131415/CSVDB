@@ -10,18 +10,23 @@ namespace csvdb
 	class TableValue;
 
 	enum TableValueType {csvdbInt = 0, csvdbVarchar = 1, csvdbFloat = 2, csvdbTimestamp = 3};
-	
+
 	class Column
 	{
 	public:
-		Column(char*, TableValueType);
+		Column(char*, TableValueType, int, int);
 		~Column();
 		void setOp(WhereOperand);
 		void setWhereConst(TableValue*);
-		void setFP(char*);
+		void setFP(int);
 		void getRow();
 		bool finished = false;
 		bool passedTheWhere;
+		int current_batch = 0;
+		int current_fp_index = 0;
+		int file_sizes;
+		int file_num;
+		std::string base_file_path;
 		std::ios_base::openmode fileMode;
 		WhereOperand op = WhereOperand::none;
 		TableValue* whereConst = nullptr;
