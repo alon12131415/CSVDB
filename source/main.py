@@ -104,13 +104,16 @@ please finish a command with a ; IN A NEW LINE.""")
 		input_text = input_from_keyboard()
 		execute_command(input_text)
 
+def clear():   
+	if os.name == 'nt': os.system('cls') # for windows 
+	else: os.system('clear') # for mac and linux(here, os.name is 'posix') 
 
 def perform_tests():
 	failed = False
-	for test in tests:
-		print("[running test]: ", test)
+	for test_num, test in enumerate(tests):
 		for file_size in range(2, 10):
 			consts.FILE_SIZES = file_size
+			print("[running test {}/{}]: {}".format(test_num, len(tests), test))
 			print("using file sizes of: ", consts.FILE_SIZES)
 			with open(os.path.join(consts.SOURCE_DIR, "unittests", test, "test.sql")) as infile:
 				currentPath = os.path.abspath(os.getcwd())
@@ -120,10 +123,11 @@ def perform_tests():
 				for command in commands:
 					execute_command(command)
 				if compare_files("output.csv", "good_output.csv"):
-					print("test passed!")
+					if consts.VERBOSE: print("test passed!")
+					else: clear()
 				else:
 					failed = True
-				print("------")
+				if consts.VERBOSE: print("------")
 				if os.path.exists("output.csv"):
 					os.remove("output.csv")
 				if os.path.exists("tmp.txt"):
