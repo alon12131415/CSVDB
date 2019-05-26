@@ -21,6 +21,12 @@ namespace csvdb
 		}
 		return is;
 	}
+	std::ofstream& TableInt::writeToCSV(std::ofstream& os)
+	{
+		if(amInull)	return os;
+		os << val;
+		return os;
+	}
 	int64_t TableInt::getVal() const
 	{
 		return val;

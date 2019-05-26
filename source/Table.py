@@ -8,7 +8,9 @@ import Column
 import consts
 from quicksort import merge, get_compare
 from writer import writer
-
+import csv
+import ctypes
+from library_manager import csvdbLib
 
 def line_joiner(line): return ",".join(line)
 
@@ -286,7 +288,7 @@ class Table:
 			else:
 				csvfile = open(os.path.join(self.name, final_file), "r")
 				csvreader = csv.reader(csvfile)
-				for line, i in zip(csvreader, range(200)):
+				for line, _ in zip(csvreader, range(200)):
 					print(line_joiner(line))
 
 				csvfile.close()
@@ -294,29 +296,50 @@ class Table:
 
 			return
 
-		if out is not None:
-			csvwriter = writer(out)
-		printCount = 0
-		current_batch = 0
-		max_size = consts.FILE_SIZES
-		current_fp_index = 0
-		while printCount < consts.MAX_PRINT_IN_SELECT:
-			current_batch += 1
-			field_res = {field: self.columns[field].getRow(
-				where) for field in needed_fields}
-			line = [field_res[nicknames[field]] for field in fields]
-			if line[0][0]:  # is col 0 finished
-				break
-			if not all([x[1] for x in line]):  # didn't pass the where
-				continue
-			line = [x[2] for x in line]
-			if out is not None:
-				csvwriter.add_line(line)
-			else:
-				print(line_joiner(str(x) for x in line))
-				printCount += 1
-		if out is not None:
-			csvwriter.done()
+		print_to_screen = False
+		if out is None:
+			out = "tmpOutput.csv"
+			print_to_screen = True
+
+		fields_list = list(needed_fields)
+		
+		paths = [os.path.join(self.name, field).encode("ascii") for field in fields_list]
+		c_paths =  (ctypes.c_char_p * len(paths))()
+		c_paths[:] = paths;
+
+		col_types = [{"int" : 0, "varchar" : 1, "float" : 2, "timestamp" : 3}[self.type_from_name(field)] for field in fields_list]
+		c_col_types = (ctypes.c_int * len(col_types))()
+		c_col_types[:] = col_types
+
+		out_fields = [fields_list.index(nicknames[field]) for field in fields]
+		c_out_fields = (ctypes.c_int * len(out_fields))()
+		c_out_fields[:] = out_fields
+
+		where_op = -1	#no where
+		where_const = ctypes.c_void_p(0) #nullptr
+		where_field = -1
+		if(where):
+			where_op = {"<" : 0, "<=" : 1, ">" : 2, ">=" : 3, "==" : 4, "<>" : 5, "is" : 6, "is not" : 7}[where["op"]]
+			where_field = fields_list.index(where["field"])
+			where_type = self.type_from_name(where["field"])
+			if(where_type == "int"):	where_const = ctypes.c_void_p(csvdbLib.CreateIntWhereConst(where["const"]))
+			if(where_type == "timestamp"):	where_const = ctypes.c_void_p(csvdbLib.CreateTimestampWhereConst(where["const"]))
+			if(where_type == "varchar"):	where_const = ctypes.c_void_p(csvdbLib.CreateVarcharWhereConst(where["const"].encode("ascii")))
+			if(where_type == "float"):	where_const = ctypes.c_void_p(csvdbLib.CreateFloatWhereConst(where["const"]))
+
+		table = ctypes.c_void_p(csvdbLib.Table_Create(len(c_paths), c_paths, c_col_types, \
+								len(c_out_fields), c_out_fields, \
+								where_field, where_op, where_const, \
+								self.line_batches, self.file_num))
+		csvdbLib.Table_select(table, out.encode("ascii"))
+		csvdbLib.Table_delete(table)
+
+		if print_to_screen:
+			with open("tmpOutput.csv", "r") as csvfile:
+				file_reader = csv.reader(csvfile)
+				for row, _ in zip(file_reader, range(consts.MAX_PRINT_IN_SELECT)):
+					print(row)
+			os.remove("tmpOutput.csv")
 
 	def sort_files(self, fields, order, nicknames, needed_fields, where, getRow, needInternal, generator):
 		fp_list = []

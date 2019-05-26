@@ -8,6 +8,11 @@ namespace csvdb
 		return val.readFromStream(is);
 	}
 
+	std::ofstream& operator<<(std::ofstream& os, TableValue& val)
+	{
+		return val.writeToCSV(os);
+	}
+
 	bool TableValue::satisfiesWhere(WhereOperand op, TableValue const * val) const
 	{
 		if (op == WhereOperand::none)	return true;

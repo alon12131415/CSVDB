@@ -1,6 +1,7 @@
 // csvdbdll.cpp : Defines the exported functions for the DLL application.
 //
 
+#include "table.hpp"
 #include "column.hpp"
 #include "tablevalue.hpp"
 #include "tableint.hpp"
@@ -99,5 +100,26 @@ extern "C"
 	csvdb::TableValue* CreateFloatWhereConst(double val)
 	{
 		return new csvdb::TableFloat(val);
+	}
+
+	csvdb::Table* Table_Create(int neededFieldsCount, char** neededFieldsBasePath, int* neededFieldsType,
+		int fieldsCount, int* fields, 
+		int whereField, int whereOp, csvdb::TableValue* whereConst,
+		int fileSize, int fileNum)
+	{
+		return new csvdb::Table(neededFieldsCount, neededFieldsBasePath, neededFieldsType,
+		fieldsCount, fields, 
+		whereField, whereOp, whereConst,
+		fileSize, fileNum);
+	}
+
+	void Table_select(csvdb::Table* table, char* outPath)
+	{
+		table->select(outPath);
+	}
+
+	void Table_delete(csvdb::Table* table)
+	{
+		delete table;
 	}
 }

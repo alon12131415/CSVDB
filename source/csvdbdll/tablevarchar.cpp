@@ -9,6 +9,11 @@ namespace csvdb
 		std::getline(is, val, '\0');
 		return is;
 	}
+	std::ofstream& TableVarchar::writeToCSV(std::ofstream& os)
+	{
+		os << val;
+		return os;
+	}
 	std::string TableVarchar::getVal() const
 	{
 		return val;

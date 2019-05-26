@@ -21,7 +21,9 @@ namespace csvdb
 		void setFP(int);
 		void getRow();
 		bool finished = false;
+		TableValue* lastVal;
 		bool passedTheWhere;
+	private:
 		int current_batch = 0;
 		int current_fp_index = 0;
 		int file_sizes;
@@ -30,7 +32,6 @@ namespace csvdb
 		std::ios_base::openmode fileMode;
 		WhereOperand op = WhereOperand::none;
 		TableValue* whereConst = nullptr;
-		TableValue* lastVal;
 		std::ifstream currFile;
 	};
 }

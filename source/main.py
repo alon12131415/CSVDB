@@ -113,7 +113,7 @@ def perform_tests():
 	for test_num, test in enumerate(tests):
 		for file_size in range(2, 10):
 			consts.FILE_SIZES = file_size
-			print("[running test {}/{}]: {}".format(test_num, len(tests), test))
+			print("[running test {}/{}]: {}".format(test_num + 1, len(tests), test))
 			print("using file sizes of: ", consts.FILE_SIZES)
 			with open(os.path.join(consts.SOURCE_DIR, "unittests", test, "test.sql")) as infile:
 				currentPath = os.path.abspath(os.getcwd())
@@ -144,9 +144,6 @@ def perform_tests():
 		else:
 			print_pikachu.lol(print_pikachu.pikachu)
 	word = "test passed!"
-	# # DO NOT TRY TO UNDERSTAND THIS CODE, it is the code from last year's printing sentences as big letters ;)
-	# for a,b in [(-130,0),(-130,1),(-130,2),(-130,3),(-129,0),(-129,1),(-129,2),(-129,3)]:print(''.join([['{0:08b}'.format(([1109661696, 4342398, 2084731904, 8143426, 1078082560, 3949120, 1111653376, 8143426, 2017492480, 8273984, 2017492480, 4210752, 1078082560, 3949132, 2118271488, 4342338, 269498368, 3674128, 269498368, 6328336, 1884045824, 4342856, 1077952512, 8273984, 1381656064, 4342338, 1382171136, 4343370, 1111636992, 3949122, 2084731904, 4210752, 1111636992, 4015690, 2084731904, 4342856, 1010842624, 8126978, 269516288, 1052688, 1111638528, 3949122, 608469504, 1052712, 1385333248, 6707794, 270811648, 8537128, 675578368, 3674128, 268729856, 16662560][2*ord(x)+a]//(256**c))%256) for c in range(4)][b] if ord('A')<=ord(x)<=ord('Z') else '00000000' for x in word.upper()]).replace('0',' ').replace('1','\x90'))
-
 
 def main():
 	parser = argparse.ArgumentParser()

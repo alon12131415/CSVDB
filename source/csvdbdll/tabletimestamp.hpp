@@ -22,6 +22,7 @@ namespace csvdb
 		uint64_t val;
 		bool amInull;
 		std::ifstream& readFromStream(std::ifstream&);
+		std::ofstream& writeToCSV(std::ofstream&);
 	};
 }
 #endif

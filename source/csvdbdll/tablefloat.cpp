@@ -18,6 +18,12 @@ namespace csvdb
 		amInull = intVal == 0x8000000000000000;//null is represented as a negative zero double, -0.0 
 		return is;
 	}
+	std::ofstream& TableFloat::writeToCSV(std::ofstream& os)
+	{
+		if(amInull)	return os;
+		os << val;
+		return os;
+	}
 	double TableFloat::getVal() const
 	{
 		return val;

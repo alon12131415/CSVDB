@@ -22,6 +22,7 @@ namespace csvdb
 	private:
 		std::string val;
 		std::ifstream& readFromStream(std::ifstream&);
+		std::ofstream& writeToCSV(std::ofstream&);
 	};
 }
 #endif

@@ -21,6 +21,12 @@ namespace csvdb
 		}
 		return is;
 	}
+	std::ofstream& TableTimestamp::writeToCSV(std::ofstream& os)
+	{
+		if(amInull)	return os;
+		os << val;
+		return os;
+	}
 	uint64_t TableTimestamp::getVal() const
 	{
 		return val;

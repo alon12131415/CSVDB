@@ -20,10 +20,13 @@ namespace csvdb
 		bool satisfiesWhere(WhereOperand, TableValue const *) const;
 	private:
 		virtual std::ifstream& readFromStream(std::ifstream&) = 0;
+		virtual std::ofstream& writeToCSV(std::ofstream&) = 0;
 		friend std::ifstream& operator>>(std::ifstream&, TableValue&);
+		friend std::ofstream& operator<<(std::ofstream&, TableValue&);
 	};
 
 	std::ifstream& operator>>(std::ifstream&, TableValue&);
+	std::ofstream& operator<<(std::ofstream&, TableValue&);
 }
 
 #endif
