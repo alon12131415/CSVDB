@@ -106,6 +106,7 @@ bart = """</span><span style="color: #ffffff;">#</span><span style="color: #ffff
 </span><span style="color: #ffffff;">#</span><span style="color: #ffffff;">#################</span><span style="color: #fafbfa;">#</span><span style="color: #262222;">#</span><span style="color: #c7c7c8;">#</span><span style="color: #201c1c;">#</span><span style="color: #242020;">#</span><span style="color: #242121;">#</span><span style="color: #252222;">#</span><span style="color: #252122;">#</span><span style="color: #ffffff;">#########################################
 </span><span style="color: #ffffff;">#</span><span style="color: #ffffff;">##################</span><span style="color: #141012;">#</span><span style="color: #252121;">#</span><span style="color: #242020;">#</span><span style="color: #2a2626;">#</span><span style="color: #939392;">#</span><span style="color: #555453;">#</span><span style="color: #dadada;">#</span><span style="color: #ffffff;">#########################################
 </span>"""
+nice = """"""
 def lol(x):
 	l = []
 	characters = []
@@ -150,3 +151,5 @@ def lol(x):
 		sys.stdout.write(print_color(color_codes[name], characters[i].replace("#", " ")))
 	print(print_color(color_codes["black"], ""))
 
+if __name__ == "__main__":
+	lol(nice)

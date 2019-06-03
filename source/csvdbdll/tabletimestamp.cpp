@@ -3,6 +3,20 @@
 
 namespace csvdb
 {
+	TableTimestamp::TableTimestamp(std::string str)
+	{
+		if (str == "")
+		{
+			amInull = true;
+			return;
+		}
+		amInull = false;
+		val = std::stoull(str);
+	}
+	std::string TableTimestamp::getValue() const
+	{
+		return "[timestamp] " + std::to_string(val);
+	}
 	std::ifstream& TableTimestamp::readFromStream(std::ifstream& is)
 	{
 		unsigned char buffer[9];
@@ -33,6 +47,12 @@ namespace csvdb
 	}
 	bool TableTimestamp::operator<(const TableValue& other) const
 	{
+		if (amInull){
+			return true;
+		}
+		if (other.isNull()){
+			return false;
+		}
 		return val < dynamic_cast<const TableTimestamp&>(other).val;
 	}
 	bool TableTimestamp::operator<=(const TableValue& other) const

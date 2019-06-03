@@ -104,15 +104,15 @@ please finish a command with a ; IN A NEW LINE.""")
 		input_text = input_from_keyboard()
 		execute_command(input_text)
 
-def clear():   
-	if os.name == 'nt': os.system('cls') # for windows 
-	else: os.system('clear') # for mac and linux(here, os.name is 'posix') 
+def clear():
+	if os.name == 'nt': os.system('cls') # for windows
+	else: os.system('clear') # for mac and linux(here, os.name is 'posix')
 
 def perform_tests():
 	failed = False
 	for test_num, test in enumerate(tests):
 		for file_size in range(2, 10):
-			consts.FILE_SIZES = file_size
+			# consts.FILE_SIZES = 1048576
 			print("[running test {}/{}]: {}".format(test_num + 1, len(tests), test))
 			print("using file sizes of: ", consts.FILE_SIZES)
 			with open(os.path.join(consts.SOURCE_DIR, "unittests", test, "test.sql")) as infile:
@@ -124,7 +124,8 @@ def perform_tests():
 					execute_command(command)
 				if compare_files("output.csv", "good_output.csv"):
 					if consts.VERBOSE: print("test passed!")
-					else: clear()
+					else: 
+						clear()
 				else:
 					failed = True
 				if consts.VERBOSE: print("------")
@@ -135,6 +136,7 @@ def perform_tests():
 				os.chdir(currentPath)
 				if failed:
 					break
+				# break
 		if failed:
 			break
 	if consts.ASCII:
@@ -187,6 +189,7 @@ def main():
 			input_text = infile.read()
 			for command in get_commands(input_text):
 				execute_command(command)
+				# input()
 		os.chdir(currentPath)
 		return
 

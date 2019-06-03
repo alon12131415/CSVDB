@@ -2,6 +2,7 @@
 #define CSVDB_TABLEINT_H
 
 #include "tablevalue.hpp"
+#include <string>
 
 namespace csvdb
 {
@@ -10,6 +11,7 @@ namespace csvdb
 	public:
 		TableInt() : val(0) {};
 		TableInt(int i) : val(i) {};
+		TableInt(std::string);
 		bool operator<(const TableValue&) const;
 		bool operator<=(const TableValue&) const;
 		bool operator>(const TableValue&) const;
@@ -17,10 +19,11 @@ namespace csvdb
 		bool operator==(const TableValue&) const;
 		bool operator!=(const TableValue&) const;
 		bool isNull() const;
+		std::string getValue() const;
 		int64_t getVal() const;
+		bool amInull;
 	private:
 		int64_t val;
-		bool amInull;
 		std::ifstream& readFromStream(std::ifstream&);
 		std::ofstream& writeToCSV(std::ofstream&);
 	};

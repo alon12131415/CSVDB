@@ -2,6 +2,8 @@
 #define CSVDB_TABLETIMESTAMP_H
 
 #include "tablevalue.hpp"
+#include <string>
+#include <iostream>
 
 namespace csvdb
 {
@@ -10,6 +12,7 @@ namespace csvdb
 	public:
 		TableTimestamp() : val(0) {};
 		TableTimestamp(int i) : val(i) {};
+		TableTimestamp(std::string);
 		bool operator<(const TableValue&) const;
 		bool operator<=(const TableValue&) const;
 		bool operator>(const TableValue&) const;
@@ -17,6 +20,7 @@ namespace csvdb
 		bool operator==(const TableValue&) const;
 		bool operator!=(const TableValue&) const;
 		bool isNull() const;
+		std::string getValue() const;
 		uint64_t getVal() const;
 	private:
 		uint64_t val;

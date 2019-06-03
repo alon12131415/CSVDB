@@ -103,14 +103,18 @@ extern "C"
 	}
 
 	csvdb::Table* Table_Create(int neededFieldsCount, char** neededFieldsBasePath, int* neededFieldsType,
-		int fieldsCount, int* fields, 
+		int fieldsCount, int* fields,
 		int whereField, int whereOp, csvdb::TableValue* whereConst,
-		int fileSize, int fileNum)
+		int fileSize, int fileNum,
+		int orderNum, int* orderIndeces,
+		int* orderDirections, char* basePath)
 	{
 		return new csvdb::Table(neededFieldsCount, neededFieldsBasePath, neededFieldsType,
-		fieldsCount, fields, 
+		fieldsCount, fields,
 		whereField, whereOp, whereConst,
-		fileSize, fileNum);
+		fileSize, fileNum,
+		orderNum, orderIndeces,
+		orderDirections, basePath);
 	}
 
 	void Table_select(csvdb::Table* table, char* outPath)

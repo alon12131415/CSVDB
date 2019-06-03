@@ -2,6 +2,7 @@
 #define CSVDB_TABLEFLOAT_H
 
 #include "tablevalue.hpp"
+#include <string>
 
 namespace csvdb
 {
@@ -10,6 +11,7 @@ namespace csvdb
 	public:
 		TableFloat() : val(0) {};
 		TableFloat(double i) : val(i) {};
+		TableFloat(std::string);
 		bool operator<(const TableValue&) const;
 		bool operator<=(const TableValue&) const;
 		bool operator>(const TableValue&) const;
@@ -17,6 +19,7 @@ namespace csvdb
 		bool operator==(const TableValue&) const;
 		bool operator!=(const TableValue&) const;
 		bool isNull() const;
+		std::string getValue() const;
 		double getVal() const;
 	private:
 		double val;

@@ -1,5 +1,6 @@
 __pycache__/
 input.txt
+*.o
 .gitignore
 .idea
 source/unittests/clicks

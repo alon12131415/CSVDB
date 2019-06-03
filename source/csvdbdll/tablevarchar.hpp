@@ -11,6 +11,7 @@ namespace csvdb
 	public:
 		TableVarchar() : val() {};
 		TableVarchar(char* i) : val(i) {};
+		TableVarchar(std::string i) : val(i) {};
 		bool operator<(const TableValue&) const;
 		bool operator<=(const TableValue&) const;
 		bool operator>(const TableValue&) const;
@@ -18,6 +19,7 @@ namespace csvdb
 		bool operator==(const TableValue&) const;
 		bool operator!=(const TableValue&) const;
 		bool isNull() const;
+		std::string getValue() const;
 		std::string getVal() const;
 	private:
 		std::string val;

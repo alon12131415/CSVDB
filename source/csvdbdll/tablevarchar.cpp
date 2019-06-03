@@ -4,6 +4,10 @@
 
 namespace csvdb
 {
+	std::string TableVarchar::getValue() const
+	{
+		return "[varchar] " + val;
+	}
 	std::ifstream& TableVarchar::readFromStream(std::ifstream& is)
 	{
 		std::getline(is, val, '\0');

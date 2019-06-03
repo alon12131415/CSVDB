@@ -16,6 +16,11 @@ namespace csvdb
 		base_file_path = std::string(path);
 		fileMode = std::ios::in | std::ios::binary;
 		currFile.open(base_file_path + "0.ga", fileMode);
+		this->fieldType = fieldType;
+		refreshLastVal();
+	}
+	void Column::refreshLastVal()
+	{
 		switch (fieldType)
 		{
 		case(csvdbInt):
@@ -31,7 +36,6 @@ namespace csvdb
 			lastVal = new TableTimestamp();
 			break;
 		}
-
 	}
 	Column::~Column()
 	{

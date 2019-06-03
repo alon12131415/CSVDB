@@ -4,6 +4,20 @@
 
 namespace csvdb
 {
+	TableFloat::TableFloat(std::string str)
+	{
+		if (str == "")
+		{
+			amInull = true;
+			return;
+		}
+		amInull = false;
+		val = std::stoull(str);
+	}
+	std::string TableFloat::getValue() const
+	{
+		return "[float] " + std::to_string(val);
+	}
 	std::ifstream& TableFloat::readFromStream(std::ifstream& is)
 	{
 		unsigned char buffer[8];
@@ -15,7 +29,7 @@ namespace csvdb
 			intVal |= buffer[i];
 		}
 		val = *reinterpret_cast<double*>(&intVal);
-		amInull = intVal == 0x8000000000000000;//null is represented as a negative zero double, -0.0 
+		amInull = intVal == 0x8000000000000000;//null is represented as a negative zero double, -0.0
 		return is;
 	}
 	std::ofstream& TableFloat::writeToCSV(std::ofstream& os)
@@ -30,6 +44,12 @@ namespace csvdb
 	}
 	bool TableFloat::operator<(const TableValue& other) const
 	{
+		if (amInull){
+			return true;
+		}
+		if (other.isNull()){
+			return false;
+		}
 		return val < dynamic_cast<const TableFloat&>(other).val;
 	}
 	bool TableFloat::operator<=(const TableValue& other) const

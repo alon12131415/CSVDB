@@ -56,17 +56,9 @@ def load(file_name, table_name, ignored):
 					col.fp.write(bytes(val + "\x00", encoding='utf8'))
 
 				elif col.type == "int":
-					col.fp.write(
-						(b"\x00" +
-						 struct.pack(
-							 ">q",
-							 0)) if val in [
-							"",
-							"NULL"] else (
-							b"\x01" +
-							struct.pack(
-								">q",
-								int(val))))
+					col.fp.write((b"\x00" + struct.pack(">q",0)) \
+							 if val in ["","NULL"] else (
+							b"\x01" + struct.pack(">q",int(val))))
 
 				elif col.type == "float":
 					if val in ["", "NULL"]:

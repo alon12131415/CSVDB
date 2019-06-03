@@ -20,10 +20,12 @@ namespace csvdb
 		void setWhereConst(TableValue*);
 		void setFP(int);
 		void getRow();
+		void refreshLastVal();
 		bool finished = false;
 		TableValue* lastVal;
 		bool passedTheWhere;
 	private:
+		TableValueType fieldType;
 		int current_batch = 0;
 		int current_fp_index = 0;
 		int file_sizes;

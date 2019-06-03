@@ -272,29 +272,29 @@ class Table:
 			os.remove(os.path.join(self.name, 'atmp.csv'))
 			return
 
-		if order:
-			final = []
-			file_num = self.line_batches
-			final_file = self.sort_files(fields, order, nicknames, needed_fields, where, \
-				lambda where, fields, self: [self.columns[field].getRow(where) for field in fields], True,
-				range(self.file_num))
+		# if order:
+		# 	final = []
+		# 	file_num = self.line_batches
+		# 	final_file = self.sort_files(fields, order, nicknames, needed_fields, where, \
+		# 		lambda where, fields, self: [self.columns[field].getRow(where) for field in fields], True,
+		# 		range(self.file_num))
 
-			if isinstance(final_file, list):
-				final_file = final_file[0]
-			if out is not None:  # no_print
-				if os.path.isfile(out): #FUCK WINDOWS!
-					os.remove(out)
-				os.rename(os.path.join(self.name, final_file), out)
-			else:
-				csvfile = open(os.path.join(self.name, final_file), "r")
-				csvreader = csv.reader(csvfile)
-				for line, _ in zip(csvreader, range(200)):
-					print(line_joiner(line))
+		# 	if isinstance(final_file, list):
+		# 		final_file = final_file[0]
+		# 	if out is not None:  # no_print
+		# 		if os.path.isfile(out): #FUCK WINDOWS!
+		# 			os.remove(out)
+		# 		os.rename(os.path.join(self.name, final_file), out)
+		# 	else:
+		# 		csvfile = open(os.path.join(self.name, final_file), "r")
+		# 		csvreader = csv.reader(csvfile)
+		# 		for line, _ in zip(csvreader, range(200)):
+		# 			print(line_joiner(line))
 
-				csvfile.close()
-			self.clean_up()  # delete all tmp files :)
+		# 		csvfile.close()
+		# 	self.clean_up()  # delete all tmp files :)
 
-			return
+		# 	return
 
 		print_to_screen = False
 		if out is None:
@@ -302,7 +302,9 @@ class Table:
 			print_to_screen = True
 
 		fields_list = list(needed_fields)
-		
+		if where:
+			if not where["field"] in fields_list:
+				fields_list.append(where["field"])
 		paths = [os.path.join(self.name, field).encode("ascii") for field in fields_list]
 		c_paths =  (ctypes.c_char_p * len(paths))()
 		c_paths[:] = paths;
@@ -314,6 +316,15 @@ class Table:
 		out_fields = [fields_list.index(nicknames[field]) for field in fields]
 		c_out_fields = (ctypes.c_int * len(out_fields))()
 		c_out_fields[:] = out_fields
+
+		#order - list of: [(field, ASC/DESC)*]
+		order_indeces = [fields.index(nicknames[x[0]]) for x in order]
+		c_order_indeces = (ctypes.c_int * len(order_indeces))()
+		c_order_indeces[:] = order_indeces
+
+		order_directions = [{"asc": 0, "desc": 1}[x[1]] for x in order]
+		c_order_directions = (ctypes.c_int * len(order_directions))()
+		c_order_directions[:] = order_directions
 
 		where_op = -1	#no where
 		where_const = ctypes.c_void_p(0) #nullptr
@@ -330,7 +341,9 @@ class Table:
 		table = ctypes.c_void_p(csvdbLib.Table_Create(len(c_paths), c_paths, c_col_types, \
 								len(c_out_fields), c_out_fields, \
 								where_field, where_op, where_const, \
-								self.line_batches, self.file_num))
+								self.line_batches, self.file_num,
+								len(order), c_order_indeces,
+								c_order_directions, (self.name + os.sep).encode("ascii")))
 		csvdbLib.Table_select(table, out.encode("ascii"))
 		csvdbLib.Table_delete(table)
 
@@ -358,15 +371,10 @@ class Table:
 						return next(csvreader), False
 					except StopIteration:
 						return None, True
-			a = self.sort_internally(
-				order_mapped,
-				ind,
-				fields,
-				nicknames,
-				needed_fields,
-				where,
-				compareFunc,
-				getRow,
+			a = self.sort_internally(order_mapped,ind,
+				fields,nicknames,
+				needed_fields,where,
+				compareFunc,getRow,
 				needInternal)
 			fp_list.append(a)
 		final_file = self.merge_files(
