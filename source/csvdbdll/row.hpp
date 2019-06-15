@@ -11,8 +11,9 @@ namespace csvdb
 
 	public:
 		Row(TableValue** _vals, int _len) : vals(_vals), len(_len) {};
+		// ~Row();
 		writeMode mode = CSV;
-		TableValue** vals;
+		TableValue** vals = nullptr;
 		static int orderNum;
 		static int* orderIndeces;
 		static int* orderDirections;

@@ -41,7 +41,7 @@ namespace csvdb
 	{
 
 		if(amInull)
-		{	
+		{
 			return os;
 		}
 		os << val;

@@ -5,7 +5,7 @@ import struct
 import datetime
 import Table
 import os
-
+import ZipManager
 class write_column(object):
 
 	def __init__(self, table_name, field_name, col_type, index):
@@ -17,6 +17,7 @@ def open_file(table_name, field_name, index):
 	return open(os.path.join(table_name,field_name + str(index) + '.ga'),"ab")
 
 def load(file_name, table_name, ignored):
+	ZipManager.unzipTable(table_name)
 	# table = Table.Table(table_name, "ab")
 	fp_list = {}
 	field_names = []
@@ -56,9 +57,9 @@ def load(file_name, table_name, ignored):
 					col.fp.write(bytes(val + "\x00", encoding='utf8'))
 
 				elif col.type == "int":
-					col.fp.write((b"\x00" + struct.pack(">q",0)) \
-							 if val in ["","NULL"] else (
-							b"\x01" + struct.pack(">q",int(val))))
+					col.fp.write((b"\x00" + struct.pack(">q",0))
+						 if val in ["","NULL"]
+						 else (b"\x01" + struct.pack(">q",int(val))))
 
 				elif col.type == "float":
 					if val in ["", "NULL"]:
@@ -69,18 +70,12 @@ def load(file_name, table_name, ignored):
 					col.fp.write(out)
 
 				elif col.type == "timestamp":
-					col.fp.write(
-						(b"\x00" +
-						 struct.pack(
-							 ">Q",
-							 0)) if val in [
-							"",
-							"NULL"] else (
-							b"\x01" +
-							struct.pack(
-								">Q",
-								int(val))))
+					col.fp.write((b"\x00" + struct.pack(">Q",0))
+						if val in ["","NULL"]
+						else (b"\x01" + struct.pack(">Q",int(val))))
 			current_batch += 1
+		for field_name in field_names:
+			fp_list[field_name].fp.close()
 		scheme_path = os.path.join(table_name, "table.json")
 		schema_file = open(scheme_path, "r+")
 		full_file = json.load(schema_file)
@@ -89,3 +84,5 @@ def load(file_name, table_name, ignored):
 		full_file["last_i"] = current_batch
 		json.dump(full_file, schema_file, indent=True)
 		schema_file.close()
+		ZipManager.zipTable(table_name)
+

@@ -1,7 +1,7 @@
 import consts
 import json
 import os
-
+import ZipManager
 
 def create(table_name, fields, check_ex):
 	table_path = table_name
@@ -20,3 +20,7 @@ def create(table_name, fields, check_ex):
 	out = {'schema': l, 'file_sizes': consts.FILE_SIZES, 'file_num': 0, 'last_i': 0}
 	# print(out)
 	json.dump(out, schema, indent=True)
+	schema.close()
+	ZipManager.zipTable(table_name)
+
+

@@ -22,7 +22,7 @@ namespace csvdb
 		void getRow();
 		void refreshLastVal();
 		bool finished = false;
-		TableValue* lastVal;
+		TableValue* lastVal = nullptr;
 		bool passedTheWhere;
 	private:
 		TableValueType fieldType;

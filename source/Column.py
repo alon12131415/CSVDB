@@ -9,6 +9,7 @@ from library_manager import csvdbLib
 class Column:
 
 	def __init__(self, table_name, field_name, field_type, file_sizes, file_num):
+
 		self.obj = ctypes.c_void_p(csvdbLib.Column_new(bytes(os.path.join(table_name, field_name), encoding = "ascii"),
 		{"int" : 0, "varchar" : 1, "float" : 2, "timestamp" : 3}[field_type], file_sizes, file_num))
 

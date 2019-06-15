@@ -10,6 +10,8 @@ from quicksort import merge, get_compare
 from writer import writer
 import csv
 import ctypes
+import ZipManager
+
 from library_manager import csvdbLib
 
 def line_joiner(line): return ",".join(line)
@@ -18,6 +20,7 @@ def line_joiner(line): return ",".join(line)
 class Table:
 
 	def __init__(self, table_name):
+		ZipManager.unzipTable(table_name)
 		scheme_path = os.path.join(table_name, "table.json")
 		if not os.path.isfile(scheme_path):
 			raise FileNotFoundError(
@@ -226,6 +229,7 @@ class Table:
 		having - like where
 		order - list of: [(field, ASC/DESC)*]
 		"""
+
 		fields, nicknames, needed_fields = self.get_final_field(_fields)
 		if any((isinstance(nicknames[field], tuple) for field in fields)):  # any aggs
 			needed_fields_list = list(needed_fields)
@@ -271,30 +275,6 @@ class Table:
 				self.clean_up()
 			os.remove(os.path.join(self.name, 'atmp.csv'))
 			return
-
-		# if order:
-		# 	final = []
-		# 	file_num = self.line_batches
-		# 	final_file = self.sort_files(fields, order, nicknames, needed_fields, where, \
-		# 		lambda where, fields, self: [self.columns[field].getRow(where) for field in fields], True,
-		# 		range(self.file_num))
-
-		# 	if isinstance(final_file, list):
-		# 		final_file = final_file[0]
-		# 	if out is not None:  # no_print
-		# 		if os.path.isfile(out): #FUCK WINDOWS!
-		# 			os.remove(out)
-		# 		os.rename(os.path.join(self.name, final_file), out)
-		# 	else:
-		# 		csvfile = open(os.path.join(self.name, final_file), "r")
-		# 		csvreader = csv.reader(csvfile)
-		# 		for line, _ in zip(csvreader, range(200)):
-		# 			print(line_joiner(line))
-
-		# 		csvfile.close()
-		# 	self.clean_up()  # delete all tmp files :)
-
-		# 	return
 
 		print_to_screen = False
 		if out is None:
@@ -353,6 +333,9 @@ class Table:
 				for row, _ in zip(file_reader, range(consts.MAX_PRINT_IN_SELECT)):
 					print(row)
 			os.remove("tmpOutput.csv")
+		for field_name in self.field_names:
+			del self.columns[field_name]
+		ZipManager.cleanTable(self.name)
 
 	def sort_files(self, fields, order, nicknames, needed_fields, where, getRow, needInternal, generator):
 		fp_list = []

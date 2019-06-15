@@ -1,3 +1,4 @@
+
 import os
 import consts
 consts.SOURCE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -11,6 +12,7 @@ import traceback
 import filecmp
 import inspect
 import itertools
+import csv
 tests = [
 	"age_null",
 	"cmp_null",
@@ -24,8 +26,11 @@ tests = [
 	"group1",
 	"group_order",
 	"float_null",
-	"timestamp_test"]
-
+	"escaping",
+	# "clicks",
+	"timestamp_test",
+	"sum_no_gb"
+	]
 
 def signal_handler(sig, frame):
 	print()
@@ -85,9 +90,9 @@ def compare_files(out, good):
 		return False
 	with open(out) as o:
 		with open(good) as g:
-			for i, (lo, lg) in enumerate(itertools.zip_longest(o, g, fillvalue="")):
+			for i, (lo, lg) in enumerate(itertools.zip_longest(csv.reader(o), csv.reader(g), fillvalue="")):
 				if lo != lg:
-					print(f"DIFF[{'%4d'% i}]: {repr(lo)}\t{repr(lg)}")
+					print(f"DIFF[{'%4d'% i}]: {lo}\t{lg}")
 					input()
 					print("error")
 					errs += 1
@@ -108,12 +113,41 @@ def clear():
 	if os.name == 'nt': os.system('cls') # for windows
 	else: os.system('clear') # for mac and linux(here, os.name is 'posix')
 
+def progress_bar(curr, full_val, length = 20):
+	part = curr / full_val
+	color_codes = {'black': 40,
+					'red': 41,
+					'green': 42,
+					'yellow': 43,
+					'blue': 44,
+					'purple': 45,
+					'cyan': 46,
+					'white': 47}
+	print_color = lambda code, s: "\033[1;1;{}m{}".format(code, s)
+	switch_to_green = print_color(color_codes['green'], "")
+	switch_to_black = print_color(color_codes['black'], "")
+	switch_to_red = print_color(color_codes['red'], "")
+	switch_to_yellow = print_color(color_codes['yellow'], "")
+	colored_num = part * length
+	# colored_spaces = switch_to_green +  " " * int(colored_num) + switch_to_black + " " * (length - int(colored_num))
+	colored_spaces = switch_to_red
+	colored_spaces += int(min(colored_num, length / 3)) * " "
+	if colored_num > length / 3:
+		colored_spaces += switch_to_yellow
+		colored_spaces += int(min(colored_num - length / 3, length / 3)) * " "
+		if colored_num > 2 * length / 3:
+			colored_spaces += switch_to_green
+			colored_spaces += int(colored_num - 2 * length / 3) * " "
+	colored_spaces += switch_to_black + " " * (length - int(colored_num))
+	return "Progress: " + colored_spaces + " " + str(int(part * 100)) + "%"
+
 def perform_tests():
 	failed = False
+	os.system("color")
 	for test_num, test in enumerate(tests):
 		for file_size in range(2, 10):
-			# consts.FILE_SIZES = 1048576
-			print("[running test {}/{}]: {}".format(test_num + 1, len(tests), test))
+			consts.FILE_SIZES = file_size
+			print(progress_bar(test_num + 1, len(tests)) + " " + test)
 			print("using file sizes of: ", consts.FILE_SIZES)
 			with open(os.path.join(consts.SOURCE_DIR, "unittests", test, "test.sql")) as infile:
 				currentPath = os.path.abspath(os.getcwd())
@@ -124,7 +158,7 @@ def perform_tests():
 					execute_command(command)
 				if compare_files("output.csv", "good_output.csv"):
 					if consts.VERBOSE: print("test passed!")
-					else: 
+					else:
 						clear()
 				else:
 					failed = True

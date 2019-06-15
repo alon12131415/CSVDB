@@ -23,6 +23,6 @@ def create_as_select(table_name, select_fields):
 	select_fields = list(select_fields)
 	select_fields[0] = "tmp.txt"
 	select_fields = tuple(select_fields)
-	select_from(*select_fields)
+	original_table.select(*(select_fields[:2] + select_fields[3:]))
 	load("tmp.txt", table_name, 0)
 	# os.remove("tmp.txt")

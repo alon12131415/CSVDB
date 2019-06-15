@@ -27,7 +27,8 @@ namespace csvdb
 		std::string sortFile(int);
 		std::string mergeFiles(const std::vector<std::string>&, int, int, int);
 		std::string merge(std::string, std::string, int);
-		Row getRowFromNSV(std::ifstream&);
+		std::string getValue(std::ifstream&);
+		Row getRowFromCSV(std::ifstream&);
 		Column** columns = nullptr;
 		int* neededFieldsType;
 		int neededFieldsCount;
