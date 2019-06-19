@@ -12,7 +12,7 @@ namespace csvdb
 			return;
 		}
 		amInull = false;
-		val = std::stoull(str);
+		val = std::atof(str.c_str());
 	}
 	std::string TableFloat::getValue() const
 	{
@@ -71,6 +71,11 @@ namespace csvdb
 	bool TableFloat::operator!=(const TableValue& other) const
 	{
 		return val != dynamic_cast<const TableFloat&>(other).val;
+	}
+	TableFloat& TableFloat::operator+=(TableValue& other)
+	{
+		val += dynamic_cast<TableFloat&>(other).val;
+		return *this;
 	}
 	bool TableFloat::isNull() const
 	{

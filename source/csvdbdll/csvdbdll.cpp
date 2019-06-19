@@ -107,14 +107,20 @@ extern "C"
 		int whereField, int whereOp, csvdb::TableValue* whereConst,
 		int fileSize, int fileNum,
 		int orderNum, int* orderIndeces,
-		int* orderDirections, char* basePath)
+		int* orderDirections, char* basePath,
+		int groupNum, int* groupIndeces,
+		int aggsNum, int* aggsTypes, int* aggsFields,
+		int havingField, int havingOp, csvdb::TableValue* havingConst)
 	{
 		return new csvdb::Table(neededFieldsCount, neededFieldsBasePath, neededFieldsType,
 		fieldsCount, fields,
 		whereField, whereOp, whereConst,
 		fileSize, fileNum,
 		orderNum, orderIndeces,
-		orderDirections, basePath);
+		orderDirections, basePath,
+		groupNum, groupIndeces,
+		aggsNum, aggsTypes, aggsFields,
+		havingField, havingOp, havingConst);
 	}
 
 	void Table_select(csvdb::Table* table, char* outPath)

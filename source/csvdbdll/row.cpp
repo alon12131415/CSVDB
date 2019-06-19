@@ -34,5 +34,13 @@ namespace csvdb
 		return false;
 	}
 
-
+	Row::~Row()
+	{
+		// return;
+		for (int i = 0; i < len; i++)
+		{
+			delete vals[i];
+		}
+		delete[] vals;
+	}
 }

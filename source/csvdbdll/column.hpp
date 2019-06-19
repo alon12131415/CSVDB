@@ -26,6 +26,7 @@ namespace csvdb
 		bool passedTheWhere;
 	private:
 		TableValueType fieldType;
+		char* myBuff;
 		int current_batch = 0;
 		int current_fp_index = 0;
 		int file_sizes;

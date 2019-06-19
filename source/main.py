@@ -22,20 +22,22 @@ tests = [
 	"age_ord",
 	"age_ord_asc",
 	"order_where",
-	"big_order",
+	"small_order",
+	# "big_order",
 	"group1",
 	"group_order",
 	"float_null",
 	"escaping",
-	# "clicks",
 	"timestamp_test",
-	"sum_no_gb"
+	"sum_no_gb",
+	"group_having"
+	# "clicks"
 	]
 
 def signal_handler(sig, frame):
 	print()
-	if consts.VERBOSE:
-		print("good bye")
+	# if consts.VERBOSE:
+	print("good bye")
 	sys.exit(0)
 
 
@@ -45,6 +47,7 @@ signal.signal(signal.SIGINT, signal_handler)
 def execute_command(input_text):
 	if consts.VERBOSE:
 		print("Executing Command:", input_text.replace("\n", " "))
+		input()
 		start_time = time.time()
 	p = Parser(input_text)
 	try:
@@ -57,6 +60,7 @@ def execute_command(input_text):
 		# if not isinstance(err, FileNotFoundError):
 		traceback.print_tb(err.__traceback__)
 		print("{}: {}".format(type(err).__name__, err))
+		input()
 
 
 def confirm_command(text):
@@ -85,6 +89,9 @@ def input_from_keyboard():
 
 def compare_files(out, good):
 	errs = 0
+	if not os.path.isfile(out):
+		print("Program Did NOT Generate an output.csv!!!")
+		return False
 	if os.stat(out).st_size == 0 and os.stat(out).st_size != 0:
 		print("OUT FILE IS EMPTY!!!")
 		return False
@@ -144,9 +151,11 @@ def progress_bar(curr, full_val, length = 20):
 def perform_tests():
 	failed = False
 	os.system("color")
+	debug = False
+	if debug: tests.append("clicks")
 	for test_num, test in enumerate(tests):
 		for file_size in range(2, 10):
-			consts.FILE_SIZES = file_size
+			if not debug: consts.FILE_SIZES = file_size
 			print(progress_bar(test_num + 1, len(tests)) + " " + test)
 			print("using file sizes of: ", consts.FILE_SIZES)
 			with open(os.path.join(consts.SOURCE_DIR, "unittests", test, "test.sql")) as infile:
@@ -170,7 +179,7 @@ def perform_tests():
 				os.chdir(currentPath)
 				if failed:
 					break
-				# break
+				if debug: break
 		if failed:
 			break
 	if consts.ASCII:
@@ -203,6 +212,10 @@ def main():
 		help="apply unittests",
 		action='store_true')
 	parser.add_argument(
+		"--filesizes",
+		help="set filesizes(the maximal amount of lines that fits in the RAM(random access memory))",
+		defaults=2**31-1)
+	parser.add_argument(
 		"--ascii",
 		help="displays ascii art",
 		action='store_true')
@@ -210,6 +223,8 @@ def main():
 	consts.VERBOSE = args.verbose
 	consts.ROOT_DIR = args.rootdir
 	consts.ASCII = args.ascii
+	if(args.ram):
+		consts.FILE_SIZES = 2**31 - 1
 	# set_const("VERBOSE", args.verbose)
 	# set_const("ROOT_DIR", args.rootdir)
 	currentPath = os.getcwd()

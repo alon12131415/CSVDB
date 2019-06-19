@@ -28,15 +28,6 @@ namespace csvdb
 	}
 	std::ofstream& TableVarchar::writeToCSV(std::ofstream& os)
 	{
-		// std::stringstream ss("");
-		// for(char& c : val) {
-		// 	if (c == '"') ss << c;
-		// 	ss << c;
-		// }
-		// std::string out = std::regex_replace(val, std::regex("\""), "\"\"");
-		// os << "\"" << out << "\"";
-		//replaceAll(val, "\"", "\"\"");
-		//os << "\"" << val << "\"" ;;
 		size_t start_pos = 0;
 		size_t prev_pos = 0;
 		os << "\"";
@@ -78,6 +69,11 @@ namespace csvdb
 	bool TableVarchar::operator!=(const TableValue& other) const
 	{
 		return val != dynamic_cast<const TableVarchar&>(other).val;
+	}
+	TableVarchar& TableVarchar::operator+=(TableValue& other)
+	{
+		val += dynamic_cast<TableVarchar&>(other).val;
+		return *this;
 	}
 	bool TableVarchar::isNull() const
 	{

@@ -12,12 +12,14 @@ namespace csvdb
 		TableVarchar() : val("") {};
 		TableVarchar(char* i) : val(i) {};
 		TableVarchar(std::string i) : val(i) {};
+		TableValue* clone() {return new TableVarchar(val);};
 		bool operator<(const TableValue&) const;
 		bool operator<=(const TableValue&) const;
 		bool operator>(const TableValue&) const;
 		bool operator>=(const TableValue&) const;
 		bool operator==(const TableValue&) const;
 		bool operator!=(const TableValue&) const;
+		TableVarchar& operator+=(TableValue&);
 		bool isNull() const;
 		void replaceAll(std::string& str, const std::string& from, const std::string& to);
 		std::string getValue() const;

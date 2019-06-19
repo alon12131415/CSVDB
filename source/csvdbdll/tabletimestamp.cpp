@@ -75,6 +75,11 @@ namespace csvdb
 	{
 		return val != dynamic_cast<const TableTimestamp&>(other).val;
 	}
+	TableTimestamp& TableTimestamp::operator+=(TableValue& other)
+	{
+		val += dynamic_cast<TableTimestamp&>(other).val;
+		return *this;
+	}
 	bool TableTimestamp::isNull() const
 	{
 		return amInull;

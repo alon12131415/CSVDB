@@ -11,15 +11,14 @@ namespace csvdb
 
 	public:
 		Row(TableValue** _vals, int _len) : vals(_vals), len(_len) {};
-		// ~Row();
+		~Row();
 		writeMode mode = CSV;
 		TableValue** vals = nullptr;
 		static int orderNum;
 		static int* orderIndeces;
 		static int* orderDirections;
 		bool operator<(const Row&) const;
-	private:
-		int len;
+		int len = 0;
 
 	friend std::ofstream& operator<<(std::ofstream&, const Row&);
 	};

@@ -13,13 +13,16 @@ namespace csvdb
 		TableTimestamp() : val(0) {};
 		TableTimestamp(int i) : val(i) {};
 		TableTimestamp(std::string);
+		TableValue* clone() {TableTimestamp* c = new TableTimestamp(val); c->amInull = amInull; return c;};
 		bool operator<(const TableValue&) const;
 		bool operator<=(const TableValue&) const;
 		bool operator>(const TableValue&) const;
 		bool operator>=(const TableValue&) const;
 		bool operator==(const TableValue&) const;
 		bool operator!=(const TableValue&) const;
+		TableTimestamp& operator+=(TableValue&);
 		bool isNull() const;
+		double getFloatVal() {return val;};
 		std::string getValue() const;
 		uint64_t getVal() const;
 	private:

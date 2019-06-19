@@ -81,6 +81,11 @@ namespace csvdb
 	{
 		return val != dynamic_cast<const TableInt&>(other).val;
 	}
+	TableInt& TableInt::operator+=(TableValue& other)
+	{
+		val += dynamic_cast<TableInt&>(other).val;
+		return *this;
+	}
 	bool TableInt::isNull() const
 	{
 		return amInull;

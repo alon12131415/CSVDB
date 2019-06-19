@@ -41,9 +41,11 @@ def unzipTable(table_name):
 
 
 def cleanTable(table_name):
+	if not os.path.isfile(os.path.join( table_name, table_name + ".zip")):
+		return
 	for root, dirs, files in os.walk(table_name):
 		for file in files:
-			if (file[-4:] != ".ga"):
+			if (file[-3:] != ".ga"):
 				continue
 			os.remove(os.path.join(root, file))
 if __name__ == '__main__':

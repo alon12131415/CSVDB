@@ -16,5 +16,6 @@ sum(val) as x
 into outfile "output2.csv" 
 from test 
 group by category 
-having x > 100
-order by x DESC;
+order by x DESC
+having x > 100;
+

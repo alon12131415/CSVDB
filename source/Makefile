@@ -5,10 +5,10 @@ OBJ:= $(patsubst %.cpp,%.o,$(CPP_SRC))
 all: csvdb.dll
 
 csvdb.dll: $(OBJ) $(HDRS)
-	g++ -shared -std=c++17 $(OBJ) -o $@
+	g++ -fopenmp -D_GLIBCXX_PARALLEL -std=c++17 -o3 -shared  $(OBJ) -o $@
 
 csvdbdll/%.o: csvdbdll/%.cpp $(HDRS)
-	g++ -c -fPIC -m64 -Wall -std=c++17 $< -o $@
+	g++ -fopenmp -D_GLIBCXX_PARALLEL -std=c++17 -o3 -c -fPIC -m64  $< -o $@
 
 clean:
 	rm -f $(OBJ) csvdb.dll *~

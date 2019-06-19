@@ -15,6 +15,9 @@ namespace csvdb
 		file_num = _file_num;
 		base_file_path = std::string(path);
 		fileMode = std::ios::in | std::ios::binary;
+		int bufSize = 1048576;
+		myBuff = new char[bufSize];
+		currFile.rdbuf()->pubsetbuf(myBuff, bufSize);
 		currFile.open(base_file_path + "0.ga", fileMode);
 		this->fieldType = fieldType;
 		refreshLastVal();
@@ -42,6 +45,7 @@ namespace csvdb
 		currFile.close();
 		delete lastVal;
 		delete whereConst;
+		delete[] myBuff;
 	}
 	void Column::setOp(WhereOperand op_)
 	{

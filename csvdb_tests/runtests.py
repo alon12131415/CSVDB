@@ -5,7 +5,6 @@ import shutil
 import subprocess
 import sys
 import tempfile
-import itertools
 import csv
 
 g_prog = None
@@ -22,17 +21,25 @@ def OSysArgs(args):
         raise RuntimeError("Error executing command")
     return out
 
+def check_eof(f):
+    try:
+        line = next(f)
+        return False  # we managed to read more - that's bad
+    except StopIteration as se:
+        return True
 
 def compare_files(out, good):
     print("Comparing files:\n\t{}\n\t{}".format(out, good))
     errs = 0
     with open(out) as o:
+        # TODO(franji): handle different in length - e.g. output empty
         with open(good) as g:
-            for i, (lo, lg) in enumerate(itertools.zip_longest(csv.reader(o), csv.reader(g), fillvalue=[])):
-
+            for i, (lo, lg) in enumerate(zip(csv.reader(o), csv.reader(g))):
                 if lo != lg:
-                    print(f"DIFF[{'%4d'% i}]: {repr(lo)}\t{repr(lg)}")
+                    print(f"DIFF[{'%4d'% i}]: {lo}\t{lg}")
                     errs += 1
+            if not check_eof(o) or not check_eof(g):
+                raise RuntimeError("Test failed - files different size")
     if errs:
         raise RuntimeError("Test failed")
 

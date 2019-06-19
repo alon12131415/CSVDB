@@ -64,10 +64,13 @@ csvdbLib.CreateFloatWhereConst.restype = ctypes.c_void_p
 
 csvdbLib.Table_Create.argstypes = [ctypes.c_int, ctypes.POINTER(ctypes.c_char_p), ctypes.POINTER(ctypes.c_int), \
 									ctypes.c_int, ctypes.POINTER(ctypes.c_int), \
-									ctypes.c_int, ctypes.c_int, ctypes.c_void_p,
-									ctypes.c_int, ctypes.c_int,
-									ctypes.c_int, ctypes.POINTER(ctypes.c_int),
-									ctypes.POINTER(ctypes.c_int), ctypes.c_void_p]
+									ctypes.c_int, ctypes.c_int, ctypes.c_void_p, \
+									ctypes.c_int, ctypes.c_int, \
+									ctypes.c_int, ctypes.POINTER(ctypes.c_int), \
+									ctypes.POINTER(ctypes.c_int), ctypes.c_void_p, \
+									ctypes.c_int, ctypes.POINTER(ctypes.c_int), \
+									ctypes.c_int, ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+									ctypes.c_int, ctypes.c_int, ctypes.c_void_p]
 csvdbLib.Table_Create.restype = ctypes.c_void_p
 
 csvdbLib.Table_select.argstypes = [ctypes.c_void_p, ctypes.c_char_p]
