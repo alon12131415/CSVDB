@@ -1,4 +1,3 @@
-
 import os
 import consts
 consts.SOURCE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -258,4 +257,3 @@ def get_commands(text):
 
 if __name__ == '__main__':
 	main()
-
