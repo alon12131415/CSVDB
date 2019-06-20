@@ -106,47 +106,50 @@ bart = """</span><span style="color: #ffffff;">#</span><span style="color: #ffff
 </span><span style="color: #ffffff;">#</span><span style="color: #ffffff;">#################</span><span style="color: #fafbfa;">#</span><span style="color: #262222;">#</span><span style="color: #c7c7c8;">#</span><span style="color: #201c1c;">#</span><span style="color: #242020;">#</span><span style="color: #242121;">#</span><span style="color: #252222;">#</span><span style="color: #252122;">#</span><span style="color: #ffffff;">#########################################
 </span><span style="color: #ffffff;">#</span><span style="color: #ffffff;">##################</span><span style="color: #141012;">#</span><span style="color: #252121;">#</span><span style="color: #242020;">#</span><span style="color: #2a2626;">#</span><span style="color: #939392;">#</span><span style="color: #555453;">#</span><span style="color: #dadada;">#</span><span style="color: #ffffff;">#########################################
 </span>"""
+nice = """"""
 def lol(x):
-    l = []
-    characters = []
-    class MyHTMLParser(HTMLParser):
-        def handle_starttag(self, tag, attrs):
-            for attr in attrs:
-                color = attr[1].split("color: #")[1][:-1]
-                chunks, chunk_size = len(color), 2
-                l.append(tuple( int(color[i:i+chunk_size], 16) for i in range(0, chunks, chunk_size) ))
+	l = []
+	characters = []
+	class MyHTMLParser(HTMLParser):
+		def handle_starttag(self, tag, attrs):
+			for attr in attrs:
+				color = attr[1].split("color: #")[1][:-1]
+				chunks, chunk_size = len(color), 2
+				l.append(tuple( int(color[i:i+chunk_size], 16) for i in range(0, chunks, chunk_size) ))
 
-        def handle_data(self, data):
-            characters.append(data)
-    parser = MyHTMLParser()
-    parser.feed(x)
+		def handle_data(self, data):
+			characters.append(data)
+	parser = MyHTMLParser()
+	parser.feed(x)
 
-    def distanceSQ(colora, colorb):
-        return sum((colora[i] - colorb[i]) ** 2 for i in range(3))
-    # print(l)
-    real_colors = {(255, 255, 0): 'yellow',
-                    (0, 0, 0): 'black',
-                    (255, 0, 0): 'red',
-                    (0, 255, 0): 'green',
-                    (0, 0, 255): 'blue',
-                    (255, 0, 255): 'purple',
-                    (0, 255, 255): 'cyan',
-                    (255, 255, 255): 'white'}
+	def distanceSQ(colora, colorb):
+		return sum((colora[i] - colorb[i]) ** 2 for i in range(3))
+	# print(l)
+	real_colors = {(255, 255, 0): 'yellow',
+					(0, 0, 0): 'black',
+					(255, 0, 0): 'red',
+					(0, 255, 0): 'green',
+					(0, 0, 255): 'blue',
+					(255, 0, 255): 'purple',
+					(0, 255, 255): 'cyan',
+					(255, 255, 255): 'white'}
 
-    color_codes = {'black': 40,
-                    'red': 41,
-                    'green': 42,
-                    'yellow': 43,
-                    'blue': 44,
-                    'purple': 45,
-                    'cyan': 46,
-                    'white': 47}
-    print_color = lambda code, s: "\033[1;1;{}m{}".format(code, s)
-    final_colors = [real_colors[min((distanceSQ(x, y), x) for x in real_colors)[1]] for y in l]
-    os.system("color")
-    for i, name in enumerate(final_colors):
-        # if i % 100 == 0:
-        #     print("")
-        sys.stdout.write(print_color(color_codes[name], characters[i].replace("#", " ")))
-    print(print_color(color_codes["black"], ""))
+	color_codes = {'black': 40,
+					'red': 41,
+					'green': 42,
+					'yellow': 43,
+					'blue': 44,
+					'purple': 45,
+					'cyan': 46,
+					'white': 47}
+	print_color = lambda code, s: "\033[1;1;{}m{}".format(code, s)
+	final_colors = [real_colors[min((distanceSQ(x, y), x) for x in real_colors)[1]] for y in l]
+	os.system("color")
+	for i, name in enumerate(final_colors):
+		# if i % 100 == 0:
+		#	 print("")
+		sys.stdout.write(print_color(color_codes[name], characters[i].replace("#", " ")))
+	print(print_color(color_codes["black"], ""))
 
+if __name__ == "__main__":
+	lol(nice)

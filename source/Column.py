@@ -1,94 +1,61 @@
 from null import NULL
+import consts
 import os
+import sys
 import struct
-
+import ctypes
+from library_manager import csvdbLib
 
 class Column:
 
-    def __init__(self, table_name, field_name, field_type, mode):
-        self.mode = mode
-        self.table_name = table_name
-        self.field_name = field_name
-        self.fp = open(
-            os.path.join(
-                self.table_name,
-                self.field_name +
-                "0" +
-                '.ga'),
-            self.mode)
-        self.type = field_type
+	def __init__(self, table_name, field_name, field_type, file_sizes, file_num):
 
-    def setFP(self, index):
-        self.fp.close()
-        self.fp = open(
-            os.path.join(
-                self.table_name,
-                self.field_name +
-                str(index) +
-                '.ga'),
-            self.mode)
+		self.obj = ctypes.c_void_p(csvdbLib.Column_new(bytes(os.path.join(table_name, field_name), encoding = "ascii"),
+		{"int" : 0, "varchar" : 1, "float" : 2, "timestamp" : 3}[field_type], file_sizes, file_num))
 
-    def getRow(self, where):  # return: finished, valid(where), val
+		self.table_name = table_name
+		self.field_name = field_name
+		self.field_type = field_type
+		self.where_set_up = False
+		self.file_sizes = file_sizes
+		self.file_num = file_num
+		self.current_batch = 0
+		self.current_fp_index = 0
 
-        def satisfiesWhere(x):  # better solution would be eval but fine - shut up
-            if where['field'] != self.field_name:
-                return True
-            op = where["op"]
-            const = where["const"]
-            if x is None:
-                return (op == "is")
+	def __del__(self):
+		csvdbLib.Column_delete(self.obj)
 
-            if op == "<":
-                return x < const
-            if op == "<=":
-                return x <= const
-            if op == "<>":
-                return x != const
-            if op == "==":
-                return x == const
-            if op == ">=":
-                return x >= const
-            if op == ">":
-                return x > const
-            if op == "is":
-                return False
-            if op == "is not":
-                return True
-            raise NotImplementedError(x, op, const)
+	def setFP(self, index):
+		csvdbLib.Column_setFP(self.obj, index)
 
-        if where == {}:
-            def satisfiesWhere(x): return True
-        if self.type == "varchar":
-            val = self.fp.readline().decode(encoding="utf8")
-            if not val:
-                return True, True, None
-            return False, satisfiesWhere(val[:-1]), val[:-1]
+	def getRow(self, where):  # return: finished, valid(where), val
+		# if self.current_batch > self.file_sizes - 1:
+		# 	self.current_batch = 0
+		# 	self.current_fp_index += 1
+		# 	if (self.current_fp_index >= self.file_num):
+		# 		return True, True, None
+		# 	self.setFP(self.current_fp_index)
+		if not self.where_set_up:
+			if where != {} and where["field"] == self.field_name:
+				csvdbLib.Column_setOp(self.obj, {"<" : 0, "<=" : 1, ">" : 2, ">=" : 3, "==" : 4, "<>" : 5, "is" : 6, "is not" : 7}[where["op"]])
+				if(self.field_type == "int"):	csvdbLib.Column_setWhereConst(self.obj, ctypes.c_void_p(csvdbLib.CreateIntWhereConst(where["const"])))
+				if(self.field_type == "timestamp"):	csvdbLib.Column_setWhereConst(self.obj, ctypes.c_void_p(csvdbLib.CreateTimestampWhereConst(where["const"])))
+				if(self.field_type == "varchar"):	csvdbLib.Column_setWhereConst(self.obj, ctypes.c_void_p(csvdbLib.CreateVarcharWhereConst(bytes(where["const"], encoding = "ascii"))))
+				if(self.field_type == "float"):	csvdbLib.Column_setWhereConst(self.obj, ctypes.c_void_p(csvdbLib.CreateFloatWhereConst(where["const"])))
+			self.where_set_up = True
 
-        elif self.type == "int":
-            val = self.fp.read(9)
-            if not val:
-                return True, True, None
-            if val[0] != 0:
-                val = struct.unpack(">q", val[1:])[0]
-                return False, satisfiesWhere(val), str(val)
-            else:
-                return False, satisfiesWhere(None), NULL()
-
-        elif self.type == "float":
-            val = self.fp.read(8)
-            if not val:
-                return True, True, None
-            if struct.unpack(">Q", val)[0] == 2**63:
-                return False, satisfiesWhere(None), NULL()
-            val = struct.unpack(">d", val)[0]
-            return False, satisfiesWhere(val), str(val)
-
-        elif self.type == "timestamp":
-            val = self.fp.read(9)
-            if not val:
-                return True, True, None
-            if val[0] != "\x00":
-                val = struct.unpack(">Q", val[1:])[0]
-                return False, satisfiesWhere(val), str(val)
-            else:
-                return False, satisfiesWhere(None), NULL()
+		csvdbLib.Column_getRow(self.obj)
+		finished = csvdbLib.Column_getFinished(self.obj)
+		passedTheWhere = csvdbLib.Column_getPassedTheWhere(self.obj)
+		if(self.field_type == "int"):
+			value = csvdbLib.Column_getIntVal(self.obj) if not csvdbLib.Column_getIsNull(self.obj) else ""
+		if(self.field_type == "timestamp"):
+			value = csvdbLib.Column_getTimestampVal(self.obj) if not csvdbLib.Column_getIsNull(self.obj) else ""
+		if(self.field_type == "varchar"):
+			ca = csvdbLib.Column_getVarcharVal(self.obj)
+			value = ctypes.c_char_p(ca).value.decode("ascii")
+			csvdbLib.DeleteVarchar(ctypes.c_char_p(ca))#release the memory
+		if(self.field_type == "float"):
+			value = csvdbLib.Column_getFloatVal(self.obj) if not csvdbLib.Column_getIsNull(self.obj) else ""
+		self.current_batch += 1
+		return finished, passedTheWhere, value

@@ -5,6 +5,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import csv
 
 g_prog = None
 
@@ -20,22 +21,34 @@ def OSysArgs(args):
         raise RuntimeError("Error executing command")
     return out
 
+def check_eof(f):
+    try:
+        line = next(f)
+        return False  # we managed to read more - that's bad
+    except StopIteration as se:
+        return True
 
 def compare_files(out, good):
+    print("Comparing files:\n\t{}\n\t{}".format(out, good))
     errs = 0
     with open(out) as o:
+        # TODO(franji): handle different in length - e.g. output empty
         with open(good) as g:
-            for i, (lo, lg) in enumerate(zip(o, g)):
-
+            for i, (lo, lg) in enumerate(zip(csv.reader(o), csv.reader(g))):
                 if lo != lg:
                     print(f"DIFF[{'%4d'% i}]: {lo}\t{lg}")
                     errs += 1
+            if not check_eof(o) or not check_eof(g):
+                raise RuntimeError("Test failed - files different size")
     if errs:
         raise RuntimeError("Test failed")
 
 
 def run_test(test_dir, verbose):
+    test_dir = os.path.abspath(test_dir)
     print("Running test at: ", test_dir)
+    save_dir = os.getcwd() # in windows directory cannot be removed
+            # if CD into it.
     with tempfile.TemporaryDirectory() as tmp_dir:
         sql = 'test.sql'
         for src in [sql] + [f for f in os.listdir(test_dir) if f.endswith(".csv")]:
@@ -45,19 +58,22 @@ def run_test(test_dir, verbose):
                     "--run", os.path.join(tmp_dir, sql),
                     "--rootdir", ".",
                     ]
-        current_dir = os.getcwd()
         os.chdir(tmp_dir)
         cmd_out = OSysArgs(cmd_args)
         print(cmd_out)
-        out_file = os.path.join(tmp_dir, "output.csv")
-        ###shutil.copyfile(out_file, "/tmp/data/test_out.csv")   ## DEBUG
-        good_out = os.path.join(test_dir, "good_output.csv")
-        compare_files(out_file, good_out)
-        os.chdir(current_dir)
+        # go over output files and compare
+        for output in os.listdir("."):
+            if not re.match("^output.*\.csv$", output):
+                continue
+            out_file = os.path.join(tmp_dir, output)
+            good_out = os.path.join(test_dir, "good_" + output)
+            compare_files(out_file, good_out)
+        os.chdir(save_dir)
 
 
 def run_tests(tests_dir, verbose, testname=None):
     save_dir = os.getcwd()
+    tests_count = 0
     for f in os.listdir(tests_dir):
         if re.match(r"^[\._]", f):
             # ignore .idea, __pycache__ etc.
@@ -67,9 +83,11 @@ def run_tests(tests_dir, verbose, testname=None):
         full = os.path.join(tests_dir, f)
         if not os.path.isdir(full):
             continue
+        tests_count += 1
         print("Running test: ", f)
         run_test(full, verbose)
     os.chdir(save_dir)
+    print("{} tests done.".format(tests_count))
 
 def main():
     global g_prog
@@ -82,7 +100,7 @@ def main():
     parser.add_argument("--testname", help="if given - run test only on this directory")
     args = parser.parse_args()
     g_prog = os.path.abspath(args.prog)
-    run_tests(os.path.abspath(args.testsdir), args.verbose, args.testname)
+    run_tests(args.testsdir, args.verbose, args.testname)
 
 
 if __name__ == '__main__':
