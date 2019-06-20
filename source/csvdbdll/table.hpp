@@ -31,7 +31,7 @@ namespace csvdb
 		void selectOrder(const char*);
 		void selectGroup(const char*);
 		bool operator() (const Row&, const Row&);
-		void requestOrder();
+		std::vector<Row*> requestOrder();
 		void writeGroup(TableValue**, Aggregator**, std::ofstream&);
 		void updateAggs(Aggregator** ,Row*);
 		void resetAggs(Aggregator**);

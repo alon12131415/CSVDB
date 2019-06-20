@@ -12,6 +12,7 @@
 #include <parallel/algorithm>
 #include <vector>
 #include <sstream>
+#include <chrono>
 
 namespace csvdb
 {
@@ -107,20 +108,24 @@ namespace csvdb
 	void Table::selectGroup(const char* outPath)
 	{
 
-		requestOrder();
+		std::vector<Row*> rows = requestOrder();
 		std::ifstream currFile;
 		std::ofstream outFile;
-		currFile.open(basePath + "atmp.csv", std::ios::in | std::ios::binary);
 		outFile.open(outPath, std::ios::out | std::ios::binary);
-
-
-		int bufSize = 1048576;
-		char* myBuff = new char[bufSize];
-		currFile.rdbuf()->pubsetbuf(myBuff, bufSize);
-
-
+		Row* row;
+		if (rows.size() == 0)
+		{
+			currFile.open(basePath + "atmp.csv", std::ios::in | std::ios::binary);
+			int bufSize = 1048576;
+			char* myBuff = new char[bufSize];
+			currFile.rdbuf()->pubsetbuf(myBuff, bufSize);
+			row = new Row(new TableValue*[fieldCount] {nullptr}, fieldCount);
+		}
+		else
+		{
+			row = nullptr;
+		}
 		TableValue** prevGroup = groupNum == 0 ? nullptr : new TableValue*[groupNum] {nullptr};
-		Row* row = new Row(new TableValue*[fieldCount] {nullptr}, fieldCount);
 
 		Aggregator** aggregators = new Aggregator*[aggsNum];
 		for (int i = 0; i < aggsNum; i++)
@@ -145,9 +150,15 @@ namespace csvdb
 				break;
 			}
 		}
-
-		getRowFromCSV(row, currFile);
-		if(currFile.eof())
+		if (rows.size() == 0)
+		{
+			getRowFromCSV(row, currFile);
+		}
+		else
+		{
+			row = rows[0];
+		}
+		if (currFile.eof())
 		{
 			outFile.close();
 			currFile.close();
@@ -158,7 +169,8 @@ namespace csvdb
 		{
 			prevGroup[i] = row->vals[groupIndeces[i]]->clone();
 		}
-		while (!currFile.eof())
+		int i = 0;
+		while ((rows.size() == 0 && !currFile.eof()) || i++ < rows.size())
 		{
 			bool changedGroup = false;
 			for (int i = 0; i < groupNum; i++)
@@ -172,7 +184,6 @@ namespace csvdb
 			if (changedGroup)
 			{
 				writeGroup(prevGroup, aggregators, outFile);
-
 				for (int i = 0; i < groupNum; i++)
 				{
 					delete prevGroup[i];
@@ -181,19 +192,25 @@ namespace csvdb
 				resetAggs(aggregators);
 			}
 			updateAggs(aggregators, row);
-			getRowFromCSV(row, currFile);
+			if (rows.size() == 0)
+				getRowFromCSV(row, currFile);
+			else
+			{
+				row = rows[i];
+			}
 		}
 		writeGroup(prevGroup, aggregators, outFile);
 		outFile.close();
 		currFile.close();
+		flushRows();
 		if(orderNum > 0)
 		{
-			flushRows();
 			std::string out = mergeFiles(filesWritten, 0, filesWritten.size(), 0);
 			std::remove(outPath);
 			std::rename(out.c_str(), outPath);
 		}
-		delete row;
+		std::remove((basePath + "atmp.csv").c_str());
+		if (rows.size() == 0) delete row;
 	}
 
 	void Table::writeGroup(TableValue** group, Aggregator** aggs, std::ofstream& os)
@@ -232,7 +249,7 @@ namespace csvdb
 	void Table::flushRows()
 	{
 		if(rowsToWrite.size() == 0)	return;
-		if (orderNum > 0) std::sort(rowsToWrite.begin(), rowsToWrite.end(), [](const Row* row1, const Row* row2) {return *row1 < *row2;});
+		if (orderNum > 0) __gnu_parallel::sort(rowsToWrite.begin(), rowsToWrite.end(), [](const Row* row1, const Row* row2) {return *row1 < *row2;});
 		std::string fileName = basePath + fileNameToWrite + std::to_string(filesWrittenNum);
 		std::ofstream outFile;
 		int bufSize = 1048576;
@@ -266,8 +283,9 @@ namespace csvdb
 		}
 	}
 
-	void Table::requestOrder()
+	std::vector<Row*> Table::requestOrder()
 	{
+		std::vector<Row*> rows;
 		int orderNum = this->orderNum;
 		int* orderIndeces = this->orderIndeces;
 		int* orderDirections = this->orderDirections;
@@ -279,9 +297,37 @@ namespace csvdb
 		Row::orderNum = this->orderNum;
 		Row::orderIndeces = this->orderIndeces;
 		Row::orderDirections = this->orderDirections;
-
-		select((basePath + "atmp.csv").c_str());
-
+		if (fileNum > 1)
+		{
+			select((basePath + "atmp.csv").c_str());
+		}
+		else
+		{
+			int fileIndex = 0;
+			std::string fileName = basePath + "tmp" + std::to_string(fileIndex);
+			rows.reserve(fileSize);
+			for(int i = 0; i < neededFieldsCount; ++i)
+			{
+				columns[i]->setFP(fileIndex);
+			}
+			for (int i = 0; i < fileSize; i++)
+			{
+				TableValue** vals = new TableValue*[fieldCount];
+				for(int i = 0; i < neededFieldsCount; ++i)
+				{
+					columns[i]->getRow();
+				}
+				if(columns[0]->finished)	break;
+				if(whereField != -1 && !columns[whereField]->passedTheWhere)	continue;
+				for (int i = 0; i < fieldCount; i++)
+				{
+					vals[i] = columns[fields[i]]->lastVal->clone();
+				}
+				Row* row = new Row(vals, fieldCount);
+				rows.push_back(row);
+			}
+			__gnu_parallel::sort(rows.begin(), rows.end(), [](const Row* row1, const Row* row2) {return *row1 < *row2;});
+		}
 		delete this->orderDirections;
 		Row::orderNum = orderNum;
 		Row::orderIndeces = orderIndeces;
@@ -291,6 +337,7 @@ namespace csvdb
 		this->orderNum = orderNum;
 		this->orderIndeces =  orderIndeces;
 		this->orderDirections =  orderDirections;
+		return rows;
 	}
 
 	void Table::selectOrder(const char* outPath)
@@ -330,7 +377,7 @@ namespace csvdb
 			Row* row = new Row(vals, fieldCount);
 			rows.push_back(row);
 		}
-		std::sort(rows.begin(), rows.end(), [](const Row* row1, const Row* row2) {return *row1 < *row2;});
+		__gnu_parallel::sort(rows.begin(), rows.end(), [](const Row* row1, const Row* row2) {return *row1 < *row2;});
 		std::ofstream outFile;
 		int bufSize = 1048576;
 		char* myBuff = new char[bufSize];

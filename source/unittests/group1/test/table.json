@@ -1,0 +1,15 @@
+{
+ "schema": [
+  {
+   "field": "category",
+   "type": "varchar"
+  },
+  {
+   "field": "val",
+   "type": "int"
+  }
+ ],
+ "file_sizes": 2147483647,
+ "file_num": 0,
+ "last_i": 3
+}

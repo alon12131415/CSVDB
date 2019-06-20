@@ -1,3 +1,4 @@
+
 import os
 import consts
 consts.SOURCE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -46,7 +47,6 @@ signal.signal(signal.SIGINT, signal_handler)
 def execute_command(input_text):
 	if consts.VERBOSE:
 		print("Executing Command:", input_text.replace("\n", " "))
-		input()
 		start_time = time.time()
 	p = Parser(input_text)
 	try:
@@ -147,10 +147,9 @@ def progress_bar(curr, full_val, length = 20):
 	colored_spaces += switch_to_black + " " * (length - int(colored_num))
 	return "Progress: " + colored_spaces + " " + str(int(part * 100)) + "%"
 
-def perform_tests():
+def perform_tests(debug):
 	failed = False
 	os.system("color")
-	debug = False
 	if debug: tests.append("clicks")
 	for test_num, test in enumerate(tests):
 		for file_size in range(2, 10):
@@ -213,7 +212,7 @@ def main():
 	parser.add_argument(
 		"--filesizes",
 		help="set filesizes(the maximal amount of lines that fits in the RAM(random access memory))",
-		defaults=2**31-1)
+		default=str(2**31-1))
 	parser.add_argument(
 		"--ascii",
 		help="displays ascii art",
@@ -222,14 +221,13 @@ def main():
 	consts.VERBOSE = args.verbose
 	consts.ROOT_DIR = args.rootdir
 	consts.ASCII = args.ascii
-	if(args.ram):
-		consts.FILE_SIZES = 2**31 - 1
+	consts.FILE_SIZES = int(args.filesizes)
 	# set_const("VERBOSE", args.verbose)
 	# set_const("ROOT_DIR", args.rootdir)
 	currentPath = os.getcwd()
 	os.chdir(args.rootdir)
 	if args.unit:
-		perform_tests()
+		perform_tests(args.test)
 		os.chdir(currentPath)
 		return
 	if args.run:
@@ -237,7 +235,6 @@ def main():
 			input_text = infile.read()
 			for command in get_commands(input_text):
 				execute_command(command)
-				# input()
 		os.chdir(currentPath)
 		return
 
@@ -257,3 +254,4 @@ def get_commands(text):
 
 if __name__ == '__main__':
 	main()
+

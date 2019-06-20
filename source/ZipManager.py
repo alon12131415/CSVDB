@@ -48,5 +48,6 @@ def cleanTable(table_name):
 			if (file[-3:] != ".ga"):
 				continue
 			os.remove(os.path.join(root, file))
+	os.remove(os.path.join(root, "table.json"))
 if __name__ == '__main__':
 	zipTable("test")
