@@ -305,7 +305,7 @@ namespace csvdb
 		{
 			int fileIndex = 0;
 			std::string fileName = basePath + "tmp" + std::to_string(fileIndex);
-			rows.reserve(fileSize);
+			// rows.reserve(fileSize);
 			for(int i = 0; i < neededFieldsCount; ++i)
 			{
 				columns[i]->setFP(fileIndex);
@@ -356,7 +356,7 @@ namespace csvdb
 	{
 		std::string fileName = basePath + "tmp" + std::to_string(fileIndex);
 		std::vector<Row*> rows;
-		rows.reserve(fileSize);
+		// rows.reserve(fileSize);
 		for(int i = 0; i < neededFieldsCount; ++i)
 		{
 			columns[i]->setFP(fileIndex);
