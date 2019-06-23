@@ -14,7 +14,7 @@ class write_column(object):
 
 
 def open_file(table_name, field_name, index):
-	return open(os.path.join(table_name,field_name + str(index) + '.ga'),"ab")
+	return open(os.path.join(table_name, field_name, str(index) + '.ga'),"ab")
 
 def load(file_name, table_name, ignored):
 	ZipManager.unzipTable(table_name)

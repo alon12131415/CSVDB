@@ -22,7 +22,6 @@ def zipTable(table_name):
 				if (file[-4:] == ".zip"):
 					continue
 				myzip.write(os.path.join(root, file))
-	print()
 	if get_size(table_name) < os.path.getsize(os.path.join(table_name, table_name + ".zip")):
 		os.remove(os.path.join(table_name, table_name + ".zip"))
 	else:
@@ -48,6 +47,4 @@ def cleanTable(table_name):
 			if (file[-3:] != ".ga"):
 				continue
 			os.remove(os.path.join(root, file))
-	os.remove(os.path.join(root, "table.json"))
-if __name__ == '__main__':
-	zipTable("test")
+	os.remove(os.path.join(table_name, "table.json"))

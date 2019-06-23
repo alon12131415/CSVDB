@@ -7,13 +7,21 @@
 #include "tablevalue.hpp"
 #include <iostream>
 
+const std::string kPathSeparator =
+#ifdef _WIN32
+    "\\";
+#else
+    "/";
+#endif
+
+
 namespace csvdb
 {
 	Column::Column(char* path, TableValueType fieldType, int _file_sizes, int _file_num)
 	{
 		file_sizes = _file_sizes;
 		file_num = _file_num;
-		base_file_path = std::string(path);
+		base_file_path = std::string(path) + kPathSeparator;
 		fileMode = std::ios::in | std::ios::binary;
 		int bufSize = 1048576;
 		myBuff = new char[bufSize];
@@ -58,7 +66,7 @@ namespace csvdb
 	void Column::setFP(int index)
 	{
 		currFile.close();
-		currFile.open(base_file_path + std::to_string(index) + ".ga", fileMode);
+		currFile.open(base_file_path + kPathSeparator + std::to_string(index) + ".ga", fileMode);
 	}
 	void Column::getRow()
 	{
