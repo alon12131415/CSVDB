@@ -1,6 +1,6 @@
 #include "aggs.hpp"
-#include "tableint.hpp"
-#include "tablevalue.hpp"
+#include "tableValues\tableint.hpp"
+#include "tableValues\tablevalue.hpp"
 #include <iostream>
 #include <fstream>
 

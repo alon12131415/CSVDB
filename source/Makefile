@@ -1,6 +1,9 @@
-CPP_SRC:= $(wildcard csvdbdll/*.cpp)
-HDRS:=$(wildcard csvdbdll/*.hpp)
-OBJ:= $(patsubst %.cpp,%.o,$(CPP_SRC))
+TABLE_VALUES_CPP := $(wildcard csvdbdll/tableValues/*.cpp)
+TABLE_VALUES_HPP := $(wildcard csvdbdll/tableValues/*.cpp)
+
+CPP_SRC := $(TABLE_VALUES_CPP) $(wildcard csvdbdll/*.cpp)
+HDRS := $(TABLE_VALUES_HPP) $(wildcard csvdbdll/*.hpp)
+OBJ := $(patsubst %.cpp,%.o,$(CPP_SRC))
 
 UNAME := $(shell uname)
 

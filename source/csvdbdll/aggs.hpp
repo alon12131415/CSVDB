@@ -1,9 +1,9 @@
 #ifndef CSVDB_AGGS_H
 #define CSVDB_AGGS_H
 #include "aggregator.hpp"
-#include "tablevalue.hpp"
-#include "tableint.hpp"
-#include "tablefloat.hpp"
+#include "tableValues\tablevalue.hpp"
+#include "tableValues\tableint.hpp"
+#include "tableValues\tablefloat.hpp"
 namespace csvdb
 {
 	class minAgg : public Aggregator

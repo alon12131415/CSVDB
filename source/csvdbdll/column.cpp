@@ -1,10 +1,10 @@
 #include "column.hpp"
 #include <string>
-#include "tableint.hpp"
-#include "tabletimestamp.hpp"
-#include "tablevarchar.hpp"
-#include "tablefloat.hpp"
-#include "tablevalue.hpp"
+#include "tableValues\tableint.hpp"
+#include "tableValues\tabletimestamp.hpp"
+#include "tableValues\tablevarchar.hpp"
+#include "tableValues\tablefloat.hpp"
+#include "tableValues\tablevalue.hpp"
 #include <iostream>
 
 const std::string kPathSeparator =

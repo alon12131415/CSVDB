@@ -1,6 +1,6 @@
 #ifndef CSVDB_ROW_H
 #define CSVDB_ROW_H
-#include "tablevalue.hpp"
+#include "tableValues\tablevalue.hpp"
 #include <algorithm>
 
 namespace csvdb
