@@ -3,11 +3,11 @@
 
 #include "table.hpp"
 #include "column.hpp"
-#include "tableValues\tablevalue.hpp"
-#include "tableValues\tableint.hpp"
-#include "tableValues\tabletimestamp.hpp"
-#include "tableValues\tablevarchar.hpp"
-#include "tableValues\tablefloat.hpp"
+#include "tableValues/tablevalue.hpp"
+#include "tableValues/tableint.hpp"
+#include "tableValues/tabletimestamp.hpp"
+#include "tableValues/tablevarchar.hpp"
+#include "tableValues/tablefloat.hpp"
 #include <iostream>
 
 namespace csvdb

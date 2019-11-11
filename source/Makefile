@@ -1,26 +1,26 @@
 TABLE_VALUES_CPP := $(wildcard csvdbdll/tableValues/*.cpp)
-TABLE_VALUES_HPP := $(wildcard csvdbdll/tableValues/*.cpp)
+TABLE_VALUES_HPP := $(wildcard csvdbdll/tableValues/*.hpp)
 
 CPP_SRC := $(TABLE_VALUES_CPP) $(wildcard csvdbdll/*.cpp)
 HDRS := $(TABLE_VALUES_HPP) $(wildcard csvdbdll/*.hpp)
 OBJ := $(patsubst %.cpp,%.o,$(CPP_SRC))
 
-UNAME := $(shell uname)
+# UNAME := $(shell uname)
 
-ifeq ($(UNAME), Linux)
+# ifeq ($(UNAME), Linux)
+# TARGET = csvdb.so
+# else
 TARGET = csvdb.so
-else
-TARGET = csvdb.dll
-endif
+# endif
 
 
 all: $(TARGET)
 
 $(TARGET): $(OBJ) $(HDRS)
-	g++ -fopenmp -D_GLIBCXX_PARALLEL -std=c++17 -o3 -shared  $(OBJ) -o $@
+	g++ -fopenmp -D_GLIBCXX_PARALLEL -std=c++11 -o3 -shared  $(OBJ) -o $@
 
 csvdbdll/%.o: csvdbdll/%.cpp $(HDRS)
-	g++ -fopenmp -D_GLIBCXX_PARALLEL -std=c++17 -o3 -c -fPIC -m64  $< -o $@
+	g++ -fopenmp -D_GLIBCXX_PARALLEL -std=c++11 -o3 -c -fPIC -m64  $< -o $@
 
 clean:
 	rm -f $(OBJ) $(TARGET) *~

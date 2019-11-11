@@ -3,7 +3,7 @@
 
 #include <fstream>
 #include <string>
-#include "tableValues\tablevalue.hpp"
+#include "tableValues/tablevalue.hpp"
 
 namespace csvdb
 {

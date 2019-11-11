@@ -1,6 +1,6 @@
 #ifndef CSVDB_AGGREGATOR_H
 #define CSVDB_AGGREGATOR_H
-#include "tableValues\tablevalue.hpp"
+#include "tableValues/tablevalue.hpp"
 #include <iostream>
 #include <fstream>
 namespace csvdb
